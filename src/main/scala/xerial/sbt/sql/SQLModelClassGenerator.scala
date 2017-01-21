@@ -73,10 +73,10 @@ class SQLModelClassGenerator(config: JDBCConfig) extends xerial.core.log.Logger 
     for (sqlFile <- (sqlDir ** "*.sql").get.par) {
       info(s"Processing ${sqlFile}")
       val sql = IO.read(sqlFile)
-      val extracted = SQLTemplate.extractParam(sql)
-      info(s"sql params: ${extracted}")
-      val limit0 = wrapWithLimit0(sql)
+      val template = SQLTemplate(sql)
+      val limit0 = wrapWithLimit0(template.populated)
       val schema = checkResultSchema(limit0)
+      info(s"template:\n${template.noParam}")
       info(schema)
       schemaToClass(sqlFile, sqlDir, schema)
     }

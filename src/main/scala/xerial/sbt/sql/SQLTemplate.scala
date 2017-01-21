@@ -5,14 +5,19 @@ import xerial.core.log.Logger
 import scala.io.Source
 import scala.util.matching.Regex.Match
 
+
+case class SQLTemplate(orig:String, params:Seq[TemplateParam], noParam:String, populated:String)
+case class TemplateParam(name:String, typeName:String, line:Int, start:Int, end:Int)
 /**
   *
   */
 object SQLTemplate extends Logger {
 
-  case class TemplateParam(name:String, typeName:String, line:Int, start:Int, end:Int)
-
   val embeddedParamPattern = """\$\{\s*(\w+)\s*(:\s*(\w+))?\s*\}""".r
+
+  def apply(sql:String) : SQLTemplate = {
+    SQLTemplate(sql, extractParam(sql), removeParamType(sql), populateParam(sql))
+  }
 
   def extractParam(sql:String) : Seq[TemplateParam] = {
     // TODO remove comment lines

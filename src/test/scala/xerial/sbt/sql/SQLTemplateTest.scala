@@ -1,7 +1,5 @@
 package xerial.sbt.sql
 
-import xerial.sbt.sql.SQLTemplate.TemplateParam
-
 /**
   *
   */
@@ -11,9 +9,9 @@ class SQLTemplateTest extends Spec {
     "extract embedded variables" in {
       val params = SQLTemplate.extractParam(
         """
-           |select * from sample_datasets.nasdaq
-           |where td_time_range(time, '${start:String}', '${end:String}')
-         """.stripMargin)
+          |select * from sample_datasets.nasdaq
+          |where td_time_range(time, '${start:String}', '${end:String}')
+        """.stripMargin)
 
       info(params)
       params.length shouldBe 2
