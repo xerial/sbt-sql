@@ -34,4 +34,25 @@ object SQLTemplate extends Logger {
     })
   }
 
+  def populateParam(sql:String) : String = {
+    val params = Seq.newBuilder[String]
+    val template = embeddedParamPattern.replaceAllIn(sql, { m: Match =>
+      val name = m.group(1)
+      val typeName = Option(m.group(3)).getOrElse("String")
+      val v = typeName match {
+        case "String" => "dummy"
+        case "Int" => "0"
+        case "Long" => "0"
+        case "Float" => "0.0"
+        case "Double" => "0.0"
+        case "Boolean" => "true"
+        case _ => ""
+      }
+      params += v
+      "%s"
+    })
+
+    String.format(template, params.result():_*)
+  }
+
 }

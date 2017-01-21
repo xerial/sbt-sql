@@ -24,7 +24,11 @@ class SQLTemplateTest extends Spec {
     "remove type param" in {
       val removed = SQLTemplate.removeParamType("select ${a:Int}, ${b:String}")
       removed shouldBe "select ${a}, ${b}"
+    }
 
+    "populate params" in {
+      val populated = SQLTemplate.populateParam("select ${a:Int}, '${b:String}', ${c:Float}, ${d:Boolean}, '${e:String}', ${f:Double}")
+      populated shouldBe "select 0, 'dummy', 0.0, true, 'dummy', 0.0"
     }
   }
 
