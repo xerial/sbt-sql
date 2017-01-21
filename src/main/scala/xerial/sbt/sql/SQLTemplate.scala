@@ -3,11 +3,13 @@ package xerial.sbt.sql
 import xerial.core.log.Logger
 
 import scala.io.Source
+import scala.util.matching.Regex.Match
 
 /**
   *
   */
 object SQLTemplate extends Logger {
+
   case class TemplateParam(name:String, typeName:String, line:Int, start:Int, end:Int)
 
   val embeddedParamPattern = """\$\{\s*(\w+)\s*(:\s*(\w+))?\s*\}""".r
@@ -23,6 +25,13 @@ object SQLTemplate extends Logger {
       }
     }
     params.result()
+  }
+
+  def removeParamType(sql:String) : String = {
+    embeddedParamPattern.replaceAllIn(sql, { m: Match =>
+      val name = m.group(1)
+      "\\${" + name + "}"
+    })
   }
 
 }

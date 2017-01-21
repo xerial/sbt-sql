@@ -20,6 +20,12 @@ class SQLTemplateTest extends Spec {
       params(0) shouldBe TemplateParam("start", "String", 3, 27, 42)
       params(1) shouldBe TemplateParam("end", "String", 3, 46, 59)
     }
+
+    "remove type param" in {
+      val removed = SQLTemplate.removeParamType("select ${a:Int}, ${b:String}")
+      removed shouldBe "select ${a}, ${b}"
+
+    }
   }
 
 }
