@@ -55,7 +55,7 @@ private[sql] case class JDBCConfig(
 )
 
 case class Schema(columns: Seq[Column])
-case class Column(name: String, sqlType: java.sql.JDBCType)
+case class Column(name: String, sqlType: java.sql.JDBCType, isNullable:Boolean)
 
 class SQLModelClassGenerator(config: JDBCConfig) extends xerial.core.log.Logger {
 
@@ -100,7 +100,8 @@ class SQLModelClassGenerator(config: JDBCConfig) extends xerial.core.log.Logger 
           val name = m.getColumnName(i)
           val tpe = m.getColumnType(i)
           val jdbcType = JDBCType.valueOf(tpe)
-          Column(name, jdbcType)
+          val nullable = m.isNullable(i) != 0
+          Column(name, jdbcType, nullable)
         }
         Schema(colTypes.toIndexedSeq)
       }
@@ -125,13 +126,17 @@ class SQLModelClassGenerator(config: JDBCConfig) extends xerial.core.log.Logger 
     }.getOrElse("")
     val name = origFile.getName.replaceAll("\\.sql$", "")
 
+    val params = schema.columns.map { c =>
+      val typeClass = SQLTypeMapping.default(c.sqlType)
+      s"${c.name}:${typeClass}"
+    }
 
     val code =
       s"""
          |package ${packageName}
          |
          |case class ${name}(
-         |
+         |  ${params.mkString(",\n  ")}
          |)
         """.stripMargin
 
