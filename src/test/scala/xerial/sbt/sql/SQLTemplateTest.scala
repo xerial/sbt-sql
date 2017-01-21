@@ -12,13 +12,13 @@ class SQLTemplateTest extends Spec {
       val params = SQLTemplate.extractParam(
         """
            |select * from sample_datasets.nasdaq
-           |where TD_TIME_RANGE(time, '${start:String}', '${end:String}')
+           |where td_time_range(time, '${start:String}', '${end:String}')
          """.stripMargin)
 
       info(params)
       params.length shouldBe 2
-      params(0) shouldBe TemplateParam("start", "String")
-      params(1) shouldBe TemplateParam("end", "String")
+      params(0) shouldBe TemplateParam("start", "String", 3, 27, 42)
+      params(1) shouldBe TemplateParam("end", "String", 3, 46, 59)
     }
   }
 
