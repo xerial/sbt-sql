@@ -15,12 +15,14 @@ pomIncludeRepository := { _ => false }
 sbtPlugin := true
 parallelExecution := true
 crossPaths := false
-scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked", "-target:jvm-1.8")
+scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked")
 scriptedBufferLog := false
 
 libraryDependencies ++= Seq(
   "org.xerial" % "xerial-lens" % "3.2.3",
-  "com.facebook.presto" % "presto-jdbc" % "0.163"
+  "com.facebook.presto" % "presto-jdbc" % "0.163",
+  "org.scalactic" %% "scalactic" % "3.0.1",
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )
 
 releaseTagName := {(version in ThisBuild).value}

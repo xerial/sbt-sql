@@ -1,0 +1,1 @@
+select * from sample_datasets.nasdaq
