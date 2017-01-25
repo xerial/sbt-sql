@@ -39,7 +39,7 @@ object SQL extends AutoPlugin {
   )
 
   lazy val prestoSettings = sqlSettings ++ Seq(
-    jdbcDriver := "com.facebook.jdbc.PrestoDriver",
+    jdbcDriver := "com.facebook.presto.jdbc.PrestoDriver",
     jdbcURL := "jdbc:presto://api-presto.treasuredata.com:443/td-presto"
   )
 
