@@ -24,26 +24,28 @@ object SQL extends AutoPlugin {
   import autoImport._
 
   // TODO split plugins for each jdbc drivers (sbt-sql-presto, sbt-sql-mysql, etc.)
-  lazy val sqlSettings = Seq[Def.Setting[_]](
+  lazy val sqlSettings = Seq(
     sqlDir := (sourceDirectory in Compile).value / "sql" / "presto",
     generateSQLModel := {
       val generated = Seq.newBuilder[File]
       val config = JDBCConfig(jdbcDriver.value, jdbcURL.value, jdbcUser.value, jdbcPassword.value)
       val generator = new SQLModelClassGenerator(config) //, state.value.log)
-      generator.generate(GeneratorConfig(sqlDir.value, managedSourceDirectories.value.head))
+      generator.generate(GeneratorConfig(sqlDir.value, (managedSourceDirectories in Compile).value.head))
       generated.result()
     },
-    sourceGenerators += generateSQLModel.taskValue
+    (sourceGenerators in Compile) += generateSQLModel.taskValue,
+    jdbcUser := "",
+    jdbcPassword := ""
   )
 
-  lazy val prestoSetting = sqlSettings ++ Seq(
+  lazy val prestoSettings = sqlSettings ++ Seq(
     jdbcDriver := "com.facebook.jdbc.PrestoDriver",
     jdbcURL := "jdbc:presto://api-presto.treasuredata.com:443/td-presto"
   )
 
   override def trigger = allRequirements
   override def requires = JvmPlugin
-  override def projectSettings = sqlSettings
+  override def projectSettings = prestoSettings
 
 }
 
