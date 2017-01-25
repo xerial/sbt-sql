@@ -31,7 +31,7 @@ object SQL extends AutoPlugin {
       val generated = Seq.newBuilder[File]
       val config = JDBCConfig(jdbcDriver.value, jdbcURL.value, jdbcUser.value, jdbcPassword.value)
       val generator = new SQLModelClassGenerator(config) //, state.value.log)
-      generator.generate(sqlDir.value)
+      //generator.generate(sqlDir.value)
       generated.result()
     }
   )

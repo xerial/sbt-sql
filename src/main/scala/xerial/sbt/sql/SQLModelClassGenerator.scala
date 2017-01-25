@@ -6,10 +6,14 @@ import java.sql.{Connection, DriverManager, JDBCType, ResultSet}
 import sbt.{File, IO}
 
 case class Schema(columns: Seq[Column])
-case class Column(name: String, sqlType: java.sql.JDBCType, isNullable: Boolean)
+case class Column(name: String, reader:ColumnReader, sqlType: java.sql.JDBCType, isNullable: Boolean)
 
-class SQLModelClassGenerator(config: JDBCConfig) extends xerial.core.log.Logger {
-  private val db = new JDBCClient(config)
+case class GeneratorConfig(sqlDir:File, targetDir:File)
+
+class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Logger {
+  private val db = new JDBCClient(jdbcConfig)
+
+  protected val typeMapping = SQLTypeMapping.default
 
   private def wrapWithLimit0(sql: String) = {
     s"""SELECT * FROM (
@@ -27,25 +31,33 @@ class SQLModelClassGenerator(config: JDBCConfig) extends xerial.core.log.Logger 
           val name = m.getColumnName(i)
           val tpe = m.getColumnType(i)
           val jdbcType = JDBCType.valueOf(tpe)
+          val reader = typeMapping(jdbcType)
           val nullable = m.isNullable(i) != 0
-          Column(name, jdbcType, nullable)
+          Column(name, reader, jdbcType, nullable)
         }
         Schema(colTypes.toIndexedSeq)
       }
     }
   }
 
-  def generate(sqlDir: File) = {
+  def generate(config:GeneratorConfig) = {
     // Submit queries using multi-threads to minimize the waiting time
-    for (sqlFile <- (sqlDir ** "*.sql").get.par) {
-      info(s"Processing ${sqlFile}")
+    for (sqlFile <- (config.sqlDir ** "*.sql").get.par) {
+      val path = sqlFile.relativeTo(config.sqlDir).get.getPath
+      val targetFile = config.targetDir / path
+      val targetClassFile = file(targetFile.getPath.replaceAll("\\.sql$", ".scala"))
+      info(s"Processing ${sqlFile}, target: ${targetFile}, ${targetClassFile}")
+      IO.copyFile(sqlFile, targetFile)
+
       val sql = IO.read(sqlFile)
       val template = SQLTemplate(sql)
       val limit0 = wrapWithLimit0(template.populated)
       val schema = checkResultSchema(limit0)
       info(s"template:\n${template.noParam}")
       info(schema)
-      schemaToClass(sqlFile, sqlDir, schema)
+
+      val scalaCode = schemaToClass(sqlFile, config.sqlDir, schema)
+      IO.write(targetClassFile, scalaCode)
     }
   }
 
@@ -56,18 +68,29 @@ class SQLModelClassGenerator(config: JDBCConfig) extends xerial.core.log.Logger 
     val name = origFile.getName.replaceAll("\\.sql$", "")
 
     val params = schema.columns.map {c =>
-      val typeClass = SQLTypeMapping.default(c.sqlType)
-      s"${c.name}:${typeClass}"
+      s"${c.name}:${c.reader.name}"
+    }
+
+    val rsReader = schema.columns.zipWithIndex.map { case (c, i) =>
+      s"rs.${c.reader.rsMethod}(${i+1})"
     }
 
     val code =
       s"""
          |package ${packageName}
+         |import java.sql.ResultSet
+         |
+         |object class ${name} {
+         |  def sql : String = "/${packageName.replaceAll("\\.", "/")}/${name}.sql"
+         |  def read(rs:ResultSet) : ${name} = {
+         |    ${name}(${rsReader.mkString(", ")})
+         |  }
+         |}
          |
          |case class ${name}(
          |  ${params.mkString(",\n  ")}
          |)
-        """.stripMargin
+         |""".stripMargin
 
     info(code)
     code
