@@ -137,7 +137,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
          |    val params = Seq(${paramNames.map(x => "\"" + x + "\"").mkString(", ")})
          |    val args = Seq(${paramNames.mkString(", ")})
          |    for((p, arg) <- params.zip(args)) {
-         |       rendered = rendered.replaceAll(s"\\$$\\{$${p}\\}", arg.toString)
+         |       rendered = rendered.replaceAll("\\$$\\{" + p + "\\}", arg.toString)
          |    }
          |    rendered
          |  }
