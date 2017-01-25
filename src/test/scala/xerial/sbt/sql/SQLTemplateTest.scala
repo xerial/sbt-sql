@@ -25,7 +25,7 @@ class SQLTemplateTest extends Spec {
     }
 
     "populate params" in {
-      val populated = SQLTemplate.populateParam("select ${a:Int}, '${b:String}', ${c:Float}, ${d:Boolean}, '${e:String}', ${f:Double}")
+      val populated = SQLTemplate("select ${a:Int}, '${b:String}', ${c:Float}, ${d:Boolean}, '${e:String}', ${f:Double}").populated
       populated shouldBe "select 0, 'dummy', 0.0, true, 'dummy', 0.0"
     }
   }

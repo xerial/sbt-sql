@@ -6,17 +6,16 @@ import scala.io.Source
 import scala.util.matching.Regex.Match
 
 
-case class SQLTemplate(orig:String, params:Seq[TemplateParam], noParam:String, populated:String)
-case class TemplateParam(name:String, typeName:String, line:Int, start:Int, end:Int)
-/**
-  *
-  */
 object SQLTemplate extends Logger {
 
   val embeddedParamPattern = """\$\{\s*(\w+)\s*(:\s*(\w+))?\s*\}""".r
 
+  sealed trait Fragment
+  case class Text(s:String) extends Fragment
+  case class Param(name:String, typeName:String) extends Fragment
+
   def apply(sql:String) : SQLTemplate = {
-    SQLTemplate(sql, extractParam(sql), removeParamType(sql), populateParam(sql))
+    SQLTemplate(sql, extractParam(sql))
   }
 
   def extractParam(sql:String) : Seq[TemplateParam] = {
@@ -38,10 +37,23 @@ object SQLTemplate extends Logger {
       "\\${" + name + "}"
     })
   }
+}
 
-  def populateParam(sql:String) : String = {
+import SQLTemplate._
+
+case class SQLTemplate(orig:String, params:Seq[TemplateParam]) {
+  def noParam : String = removeParamType(orig)
+  def render(args:Seq[Any]) : String = {
+    var rendered = noParam
+    for((p, arg) <- params.zip(args)) {
+      rendered = rendered.replaceAll(s"\\$$\\{${p.name}\\}", arg.toString)
+    }
+    rendered
+  }
+
+  def populated : String = {
     val params = Seq.newBuilder[String]
-    val template = embeddedParamPattern.replaceAllIn(sql, { m: Match =>
+    val template = embeddedParamPattern.replaceAllIn(orig, { m: Match =>
       val name = m.group(1)
       val typeName = Option(m.group(3)).getOrElse("String")
       val v = typeName match {
@@ -56,8 +68,12 @@ object SQLTemplate extends Logger {
       params += v
       "%s"
     })
-
     String.format(template, params.result():_*)
   }
 
 }
+
+case class TemplateParam(name:String, typeName:String, line:Int, start:Int, end:Int)
+/**
+  *
+  */

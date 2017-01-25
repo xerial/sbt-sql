@@ -47,7 +47,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
       val targetFile = config.targetDir / path
       val targetClassFile = file(targetFile.getPath.replaceAll("\\.sql$", ".scala"))
       info(s"Processing ${sqlFile}, target: ${targetFile}, ${targetClassFile}")
-      IO.copyFile(sqlFile, targetFile)
+
 
       val sql = IO.read(sqlFile)
       val template = SQLTemplate(sql)
@@ -56,12 +56,14 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
       info(s"template:\n${template.noParam}")
       info(schema)
 
-      val scalaCode = schemaToClass(sqlFile, config.sqlDir, schema)
+      // Write SQL template without type annotation
+      IO.write(targetFile, template.noParam)
+      val scalaCode = schemaToClass(sqlFile, config.sqlDir, schema, template)
       IO.write(targetClassFile, scalaCode)
     }
   }
 
-  def schemaToClass(origFile: File, baseDir: File, schema: Schema): String = {
+  def schemaToClass(origFile: File, baseDir: File, schema: Schema, template:SQLTemplate): String = {
     val packageName = origFile.relativeTo(baseDir).map {f =>
       f.getParent.replaceAll("""[\\/]""", ".")
     }.getOrElse("")
@@ -70,6 +72,9 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
     val params = schema.columns.map {c =>
       s"val ${c.name}:${c.reader.name}"
     }
+
+    val args = template.params.map(p => s"${p.name}:${p.typeName}")
+    val paramNames = template.params.map(_.name)
 
     val rsReader = schema.columns.zipWithIndex.map { case (c, i) =>
       s"rs.${c.reader.rsMethod}(${i+1})"
@@ -80,9 +85,21 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
          |import java.sql.ResultSet
          |
          |object ${name} {
-         |  def sql : String = "/${packageName.replaceAll("\\.", "/")}/${name}.sql"
+         |  def path : String = "/${packageName.replaceAll("\\.", "/")}/${name}.sql"
+         |  private def orig : String = {
+         |    scala.io.Source.fromInputStream(this.getClass.getResourceAsStream(path)).mkString
+         |  }
          |  def apply(rs:ResultSet) : ${name} = {
          |    new ${name}(${rsReader.mkString(", ")})
+         |  }
+         |  def sql(${args.mkString(", ")}) : String = {
+         |    var rendered = orig
+         |    val params = Seq(${paramNames.map(x => "\"" + x + "\"").mkString(", ")})
+         |    val args = Seq(${paramNames.mkString(", ")})
+         |    for((p, arg) <- params.zip(args)) {
+         |       rendered = rendered.replaceAll(s"\\$$\\{$${p}\\}" , arg.toString)
+         |    }
+         |    rendered
          |  }
          |}
          |
