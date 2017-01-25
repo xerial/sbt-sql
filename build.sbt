@@ -49,3 +49,11 @@ releaseProcess := Seq[ReleaseStep](
       pushChanges
     )
 
+resourceGenerators in Compile += Def.task {
+    val buildProp = (resourceManaged in Compile).value / "org" / "xerial" / "sbt" / "sbt-sql" / "build.properties"
+    val buildRev = Process("git" :: "rev-parse" :: "HEAD" :: Nil).!!.trim
+    val buildTime = file("src/main/scala/xerial/sbt/sql/SQLModelClassGenerator.scala").lastModified()
+    val contents = s"name=$name\nversion=${version.value}\nbuild_revision=$buildRev\nbuild_time=$buildTime"
+    IO.write(buildProp, contents)
+    Seq(buildProp)
+  }.taskValue

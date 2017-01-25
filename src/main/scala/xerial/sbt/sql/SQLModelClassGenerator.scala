@@ -2,6 +2,7 @@ package xerial.sbt.sql
 
 import sbt._
 import java.sql.{Connection, DriverManager, JDBCType, ResultSet}
+import java.util.Properties
 
 import sbt.{File, IO}
 
@@ -9,6 +10,26 @@ case class Schema(columns: Seq[Column])
 case class Column(name: String, reader:ColumnReader, sqlType: java.sql.JDBCType, isNullable: Boolean)
 
 case class GeneratorConfig(sqlDir:File, targetDir:File)
+
+object SQLModelClassGenerator extends xerial.core.log.Logger {
+
+  lazy val getBuildTime : Long = {
+    val p = new Properties()
+    val in = this.getClass.getResourceAsStream("/org/xerial/sbt/sbt-sql/build.properties")
+    if(in != null) {
+      try {
+        p.load(in)
+      }
+      finally {
+        in.close
+      }
+    }
+    else {
+      warn("buid.properties file not found")
+    }
+    p.getProperty("build_time", System.currentTimeMillis().toString).toLong
+  }
+}
 
 class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Logger {
   private val db = new JDBCClient(jdbcConfig)
@@ -40,26 +61,39 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
     }
   }
 
+
   def generate(config:GeneratorConfig) = {
     // Submit queries using multi-threads to minimize the waiting time
     for (sqlFile <- (config.sqlDir ** "*.sql").get.par) {
       val path = sqlFile.relativeTo(config.sqlDir).get.getPath
       val targetFile = config.targetDir / path
       val targetClassFile = file(targetFile.getPath.replaceAll("\\.sql$", ".scala"))
-      info(s"Processing ${sqlFile}, target: ${targetFile}, ${targetClassFile}")
 
+      info(s"Processing ${sqlFile}")
+      val buildTime = SQLModelClassGenerator.getBuildTime
+      if(targetFile.exists()
+        && targetClassFile.exists()
+        && sqlFile.lastModified() < targetFile.lastModified()
+        && targetFile.lastModified() > buildTime) {
+        info(s"${targetFile} is up-to-date")
+      }
+      else {
+        info(s"Generating ${targetFile}, ${targetClassFile}")
+        val sql = IO.read(sqlFile)
+        val template = SQLTemplate(sql)
+        val limit0 = wrapWithLimit0(template.populated)
+        val schema = checkResultSchema(limit0)
+        info(s"template:\n${template.noParam}")
+        info(schema)
 
-      val sql = IO.read(sqlFile)
-      val template = SQLTemplate(sql)
-      val limit0 = wrapWithLimit0(template.populated)
-      val schema = checkResultSchema(limit0)
-      info(s"template:\n${template.noParam}")
-      info(schema)
+        // Write SQL template without type annotation
 
-      // Write SQL template without type annotation
-      IO.write(targetFile, template.noParam)
-      val scalaCode = schemaToClass(sqlFile, config.sqlDir, schema, template)
-      IO.write(targetClassFile, scalaCode)
+        IO.write(targetFile, template.noParam)
+        val scalaCode = schemaToClass(sqlFile, config.sqlDir, schema, template)
+        IO.write(targetClassFile, scalaCode)
+        targetFile.setLastModified(buildTime)
+        targetClassFile.setLastModified(buildTime)
+      }
     }
   }
 
