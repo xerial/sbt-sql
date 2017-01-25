@@ -27,11 +27,9 @@ object SQL extends AutoPlugin {
   lazy val sqlSettings = Seq(
     sqlDir := (sourceDirectory in Compile).value / "sql" / "presto",
     generateSQLModel := {
-      val generated = Seq.newBuilder[File]
       val config = JDBCConfig(jdbcDriver.value, jdbcURL.value, jdbcUser.value, jdbcPassword.value)
       val generator = new SQLModelClassGenerator(config) //, state.value.log)
       generator.generate(GeneratorConfig(sqlDir.value, (managedSourceDirectories in Compile).value.head))
-      generated.result()
     },
     (sourceGenerators in Compile) += generateSQLModel.taskValue,
     jdbcUser := "",

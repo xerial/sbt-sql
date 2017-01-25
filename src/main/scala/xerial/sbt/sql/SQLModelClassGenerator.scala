@@ -62,8 +62,9 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
   }
 
 
-  def generate(config:GeneratorConfig) = {
+  def generate(config:GeneratorConfig) : Seq[File] = {
     // Submit queries using multi-threads to minimize the waiting time
+    val result = Seq.newBuilder[File]
     for (sqlFile <- (config.sqlDir ** "*.sql").get.par) {
       val path = sqlFile.relativeTo(config.sqlDir).get.getPath
       val targetFile = config.targetDir / path
@@ -87,19 +88,24 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
         info(schema)
 
         // Write SQL template without type annotation
-
         IO.write(targetFile, template.noParam)
         val scalaCode = schemaToClass(sqlFile, config.sqlDir, schema, template)
         IO.write(targetClassFile, scalaCode)
         targetFile.setLastModified(buildTime)
         targetClassFile.setLastModified(buildTime)
       }
+
+      synchronized {
+        result += targetFile
+        result += targetClassFile
+      }
     }
+    result.result()
   }
 
   def schemaToClass(origFile: File, baseDir: File, schema: Schema, template:SQLTemplate): String = {
     val packageName = origFile.relativeTo(baseDir).map {f =>
-      f.getParent.replaceAll("""[\\/]""", ".")
+      Option(f.getParent).map(_.replaceAll("""[\\/]""", ".")).getOrElse("")
     }.getOrElse("")
     val name = origFile.getName.replaceAll("\\.sql$", "")
 
