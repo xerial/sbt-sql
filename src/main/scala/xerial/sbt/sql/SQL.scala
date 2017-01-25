@@ -1,7 +1,5 @@
 package xerial.sbt.sql
 
-import java.sql.{Connection, DriverManager, JDBCType, ResultSet}
-
 import sbt.Keys._
 import sbt._
 import sbt.plugins.JvmPlugin
@@ -25,15 +23,17 @@ object SQL extends AutoPlugin {
 
   import autoImport._
 
+  // TODO split plugins for each jdbc drivers (sbt-sql-presto, sbt-sql-mysql, etc.)
   lazy val sqlSettings = Seq[Def.Setting[_]](
-    sqlDir := (sourceDirectory in Compile).value / "sql",
+    sqlDir := (sourceDirectory in Compile).value / "sql" / "presto",
     generateSQLModel := {
       val generated = Seq.newBuilder[File]
       val config = JDBCConfig(jdbcDriver.value, jdbcURL.value, jdbcUser.value, jdbcPassword.value)
       val generator = new SQLModelClassGenerator(config) //, state.value.log)
-      //generator.generate(sqlDir.value)
+      generator.generate(GeneratorConfig(sqlDir.value, managedSourceDirectories.value.head))
       generated.result()
-    }
+    },
+    sourceGenerators += generateSQLModel.taskValue
   )
 
   lazy val prestoSetting = sqlSettings ++ Seq(

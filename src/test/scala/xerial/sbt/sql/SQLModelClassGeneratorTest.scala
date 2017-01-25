@@ -16,7 +16,7 @@ class SQLModelClassGeneratorTest extends Spec {
           password = ""
         )
       )
-      g.generate(GeneratorConfig(new File("src/test/sql"), new File("target/sbt-0.13/src_managed")))
+      g.generate(GeneratorConfig(new File("src/test/sql/presto"), new File("target/sbt-0.13/src_managed/test")))
     }
   }
 }

@@ -68,7 +68,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
     val name = origFile.getName.replaceAll("\\.sql$", "")
 
     val params = schema.columns.map {c =>
-      s"${c.name}:${c.reader.name}"
+      s"val ${c.name}:${c.reader.name}"
     }
 
     val rsReader = schema.columns.zipWithIndex.map { case (c, i) =>
@@ -76,20 +76,21 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
     }
 
     val code =
-      s"""
-         |package ${packageName}
+      s"""package ${packageName}
          |import java.sql.ResultSet
          |
-         |object class ${name} {
+         |object ${name} {
          |  def sql : String = "/${packageName.replaceAll("\\.", "/")}/${name}.sql"
-         |  def read(rs:ResultSet) : ${name} = {
-         |    ${name}(${rsReader.mkString(", ")})
+         |  def apply(rs:ResultSet) : ${name} = {
+         |    new ${name}(${rsReader.mkString(", ")})
          |  }
          |}
          |
-         |case class ${name}(
+         |class ${name}(
          |  ${params.mkString(",\n  ")}
-         |)
+         |) {
+         |
+         |}
          |""".stripMargin
 
     info(code)
