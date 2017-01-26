@@ -65,21 +65,23 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
   def generate(config:GeneratorConfig) : Seq[File] = {
     // Submit queries using multi-threads to minimize the waiting time
     val result = Seq.newBuilder[File]
+    val buildTime = SQLModelClassGenerator.getBuildTime
+    info(s"SQLModelClassGenerator buildTime:${buildTime}")
+
     for (sqlFile <- (config.sqlDir ** "*.sql").get.par) {
       val path = sqlFile.relativeTo(config.sqlDir).get.getPath
       val targetFile = config.targetDir / path
       val targetClassFile = file(targetFile.getPath.replaceAll("\\.sql$", ".scala"))
 
       info(s"Processing ${sqlFile}")
-      val buildTime = SQLModelClassGenerator.getBuildTime
       if(targetFile.exists()
         && targetClassFile.exists()
         && sqlFile.lastModified() < targetFile.lastModified()
-        && targetFile.lastModified() > buildTime) {
+        && targetFile.lastModified() >= buildTime) {
         info(s"${targetFile} is up-to-date")
       }
       else {
-        info(s"Generating ${targetFile}, ${targetClassFile}")
+        info(s"Generating ${targetFile} (${targetFile.lastModified()}), ${targetClassFile}")
         val sql = IO.read(sqlFile)
         val template = SQLTemplate(sql)
         val limit0 = wrapWithLimit0(template.populated)
@@ -96,7 +98,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
       }
 
       synchronized {
-        result += targetFile
+        //result += targetFile
         result += targetClassFile
       }
     }
@@ -126,18 +128,20 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
          |
          |object ${name} {
          |  def path : String = "/${packageName.replaceAll("\\.", "/")}/${name}.sql"
-         |  private def orig : String = {
+         |  def originalSql : String = {
          |    scala.io.Source.fromInputStream(this.getClass.getResourceAsStream(path)).mkString
          |  }
          |  def apply(rs:ResultSet) : ${name} = {
-         |    new ${name}(${rsReader.mkString(", ")})
+         |    new ${name}(
+         |      ${rsReader.mkString(",\n")}
+         |    )
          |  }
          |  def sql(${args.mkString(", ")}) : String = {
-         |    var rendered = orig
+         |    var rendered = originalSql
          |    val params = Seq(${paramNames.map(x => "\"" + x + "\"").mkString(", ")})
          |    val args = Seq(${paramNames.mkString(", ")})
          |    for((p, arg) <- params.zip(args)) {
-         |       rendered = rendered.replaceAll("\\$$\\{" + p + "\\}", arg.toString)
+         |       rendered = rendered.replaceAll("\\\\$$\\\\{" + p + "\\\\}", arg.toString)
          |    }
          |    rendered
          |  }
