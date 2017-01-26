@@ -1,10 +1,9 @@
 package xerial.sbt.sql
 
-import sbt._
-import java.sql.{Connection, DriverManager, JDBCType, ResultSet}
+import java.sql.JDBCType
 import java.util.Properties
 
-import sbt.{File, IO}
+import sbt.{File, IO, _}
 
 case class Schema(columns: Seq[Column])
 case class Column(name: String, reader:ColumnReader, sqlType: java.sql.JDBCType, isNullable: Boolean) {
@@ -79,9 +78,10 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
       val targetClassFile = config.targetDir / path.replaceAll("\\.sql$", ".scala")
 
       info(s"Processing ${sqlFile}")
+      val srcModified = sqlFile.lastModified()
       if(targetFile.exists()
         && targetClassFile.exists()
-        && sqlFile.lastModified() < targetFile.lastModified()
+        && srcModified < targetFile.lastModified()
         && targetClassFile.lastModified() >= buildTime) {
         info(s"${targetFile} is up-to-date")
       }
@@ -98,8 +98,8 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
         IO.write(targetFile, template.noParam)
         val scalaCode = schemaToClass(sqlFile, config.sqlDir, schema, template)
         IO.write(targetClassFile, scalaCode)
-        targetFile.setLastModified(buildTime)
-        targetClassFile.setLastModified(buildTime)
+        targetFile.setLastModified(srcModified)
+        targetClassFile.setLastModified(srcModified)
       }
 
       synchronized {
