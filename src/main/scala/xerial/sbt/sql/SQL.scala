@@ -13,8 +13,8 @@ object SQL extends AutoPlugin {
     val sqlDir       = settingKey[File]("A folder containing SQL files. e.g. src/main/sql")
     val jdbcDriver   = settingKey[String]("JDBC driver class name. e.g., com.facebook.presto.jdbc.PrestoDriver")
     val jdbcURL      = settingKey[String]("JDBC connection URL. e.g., jdbc:presto://api-presto.treasuredata.com:443/td-presto")
-    val jdbcUser     = settingKey[String]("JDBC user name")
-    val jdbcPassword = settingKey[String]("JDBC password")
+    val jdbcUser     = taskKey[String]("JDBC user name")
+    val jdbcPassword = taskKey[String]("JDBC password")
 
     val generateSQLModel = taskKey[Seq[(File, File)]]("create model classes from SQL files")
     val sqlModelClasses = taskKey[Seq[File]]("Generated SQL model classes")
@@ -42,7 +42,7 @@ object SQL extends AutoPlugin {
     sqlResources := generateSQLModel.value.map(_._2),
     (sourceGenerators in Compile) += sqlModelClasses.taskValue,
     (resourceGenerators in Compile) += sqlResources.taskValue,
-    managedResourceDirectories in Compile += sqlDir.value,
+    unmanagedSourceDirectories in Compile += sqlDir.value,
     jdbcUser := "",
     jdbcPassword := ""
   )
