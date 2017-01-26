@@ -27,7 +27,7 @@ From this SQL file, sbt-sql generates Scala model classes and utility methods.
 package sample
 import java.sql.ResultSet
 
-object Nasdaql {
+object Nasdaq {
   def path : String = "/sample/Nasdaq.sql"
   def originalSql : String = {
     scala.io.Source.fromInputStream(this.getClass.getResourceAsStream(path)).mkString
