@@ -7,7 +7,12 @@ import java.util.Properties
 import sbt.{File, IO}
 
 case class Schema(columns: Seq[Column])
-case class Column(name: String, reader:ColumnReader, sqlType: java.sql.JDBCType, isNullable: Boolean)
+case class Column(name: String, reader:ColumnReader, sqlType: java.sql.JDBCType, isNullable: Boolean) {
+  def qname = name match {
+    case "type" => "`type`"
+    case _ => name
+  }
+}
 
 case class GeneratorConfig(sqlDir:File, targetDir:File, resourceTargetDir:File)
 
@@ -111,7 +116,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
     val name = origFile.getName.replaceAll("\\.sql$", "")
 
     val params = schema.columns.map {c =>
-      s"val ${c.name}:${c.reader.name}"
+      s"val ${c.qname}:${c.reader.name}"
     }
 
     val args = template.params.map(p => s"${p.name}:${p.typeName}")

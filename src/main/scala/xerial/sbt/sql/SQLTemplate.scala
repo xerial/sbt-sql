@@ -73,7 +73,8 @@ case class SQLTemplate(orig:String, params:Seq[TemplateParam]) {
 
 }
 
-case class TemplateParam(name:String, typeName:String, line:Int, start:Int, end:Int)
+case class TemplateParam(name:String, typeName:String, line:Int, start:Int, end:Int) {
+}
 /**
   *
   */
