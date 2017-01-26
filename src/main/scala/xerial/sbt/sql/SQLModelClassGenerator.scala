@@ -77,13 +77,13 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
       val targetFile = config.resourceTargetDir / path
       val targetClassFile = config.targetDir / path.replaceAll("\\.sql$", ".scala")
 
-      info(s"Processing ${sqlFile}")
+      info(s"Processing ${sqlFile.relativeTo(config.sqlDir).getOrElse(sqlFile)}")
       val latestTimestamp = Math.max(sqlFile.lastModified(), buildTime)
       if(targetFile.exists()
         && targetClassFile.exists()
         && latestTimestamp <= targetFile.lastModified()
         && latestTimestamp <= targetClassFile.lastModified()) {
-        info(s"${targetFile} is up-to-date")
+        info(s"${targetFile.relativeTo(config.targetDir).getOrElse(targetFile)} is up-to-date")
       }
       else {
         info(s"Generating ${targetFile} (${targetFile.lastModified()}), ${targetClassFile} (${targetClassFile.lastModified()})")
@@ -158,7 +158,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
          |}
          |""".stripMargin
 
-    info(code)
+    //info(code)
     code
   }
 
