@@ -32,7 +32,7 @@ object Nasdaq {
   def originalSql : String = {
     scala.io.Source.fromInputStream(this.getClass.getResourceAsStream(path)).mkString
   }
-  def apply(rs:ResultSet) : sql_tmpl = {
+  def apply(rs:ResultSet) : Nasdaq = {
     new Nasdaq(
       rs.getString(1),
       rs.getDouble(2),
