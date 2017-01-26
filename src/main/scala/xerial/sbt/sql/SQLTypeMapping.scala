@@ -9,8 +9,8 @@ case object LongColumn extends ColumnReader("Long", "getLong")
 case object FloatColumn extends ColumnReader("Float", "getFloat")
 case object DoubleColumn extends ColumnReader("Double", "getDouble")
 case object StringColumn extends ColumnReader("String", "getString")
-case object ArrayColumn extends ColumnReader("org.msgpack.value.ArrayValue", "getObject")
-case object MapColumn extends ColumnReader("org.msgpack.value.MapValue", "getObject")
+case object ArrayColumn extends ColumnReader("java.sql.Array", "getArray")
+case object MapColumn extends ColumnReader("AnyRef", "getObject")
 
 /**
   *
