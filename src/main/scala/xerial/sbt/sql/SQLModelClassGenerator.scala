@@ -9,7 +9,7 @@ import sbt.{File, IO}
 case class Schema(columns: Seq[Column])
 case class Column(name: String, reader:ColumnReader, sqlType: java.sql.JDBCType, isNullable: Boolean)
 
-case class GeneratorConfig(sqlDir:File, targetDir:File)
+case class GeneratorConfig(sqlDir:File, targetDir:File, resourceTargetDir:File)
 
 object SQLModelClassGenerator extends xerial.core.log.Logger {
 
@@ -62,22 +62,22 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
   }
 
 
-  def generate(config:GeneratorConfig) : Seq[File] = {
+  def generate(config:GeneratorConfig) : Seq[(File, File)] = {
     // Submit queries using multi-threads to minimize the waiting time
-    val result = Seq.newBuilder[File]
+    val result = Seq.newBuilder[(File, File)]
     val buildTime = SQLModelClassGenerator.getBuildTime
     info(s"SQLModelClassGenerator buildTime:${buildTime}")
 
     for (sqlFile <- (config.sqlDir ** "*.sql").get.par) {
       val path = sqlFile.relativeTo(config.sqlDir).get.getPath
-      val targetFile = config.targetDir / path
-      val targetClassFile = file(targetFile.getPath.replaceAll("\\.sql$", ".scala"))
+      val targetFile = config.resourceTargetDir / path
+      val targetClassFile = config.targetDir / path.replaceAll("\\.sql$", ".scala")
 
       info(s"Processing ${sqlFile}")
       if(targetFile.exists()
         && targetClassFile.exists()
         && sqlFile.lastModified() < targetFile.lastModified()
-        && targetFile.lastModified() >= buildTime) {
+        && targetClassFile.lastModified() >= buildTime) {
         info(s"${targetFile} is up-to-date")
       }
       else {
@@ -98,8 +98,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
       }
 
       synchronized {
-        //result += targetFile
-        result += targetClassFile
+        result += ((targetClassFile, targetFile))
       }
     }
     result.result()

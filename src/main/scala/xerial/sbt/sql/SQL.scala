@@ -16,7 +16,9 @@ object SQL extends AutoPlugin {
     val jdbcUser     = settingKey[String]("JDBC user name")
     val jdbcPassword = settingKey[String]("JDBC password")
 
-    val generateSQLModel = taskKey[Seq[File]]("create model classes from SQL files")
+    val generateSQLModel = taskKey[Seq[(File, File)]]("create model classes from SQL files")
+    val sqlModelClasses = taskKey[Seq[File]]("Generated SQL model classes")
+    val sqlResources = taskKey[Seq[File]]("Generated SQL files")
   }
 
   object autoImport extends Keys
@@ -29,9 +31,17 @@ object SQL extends AutoPlugin {
     generateSQLModel := {
       val config = JDBCConfig(jdbcDriver.value, jdbcURL.value, jdbcUser.value, jdbcPassword.value)
       val generator = new SQLModelClassGenerator(config) //, state.value.log)
-      generator.generate(GeneratorConfig(sqlDir.value, (managedSourceDirectories in Compile).value.head))
+      generator.generate(
+        GeneratorConfig(sqlDir.value,
+          (managedSourceDirectories in Compile).value.head,
+          (managedResourceDirectories in Compile).value.head
+        )
+      )
     },
-    (sourceGenerators in Compile) += generateSQLModel.taskValue,
+    sqlModelClasses := generateSQLModel.value.map(_._1),
+    sqlResources := generateSQLModel.value.map(_._2),
+    (sourceGenerators in Compile) += sqlResources.taskValue,
+    (resourceGenerators in Compile) += sqlModelClasses.taskValue,
     jdbcUser := "",
     jdbcPassword := ""
   )
