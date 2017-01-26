@@ -133,7 +133,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
          |  }
          |  def apply(rs:ResultSet) : ${name} = {
          |    new ${name}(
-         |      ${rsReader.mkString(",\n")}
+         |      ${rsReader.mkString(",\n      ")}
          |    )
          |  }
          |  def sql(${args.mkString(", ")}) : String = {
