@@ -40,8 +40,8 @@ object SQL extends AutoPlugin {
     },
     sqlModelClasses := generateSQLModel.value.map(_._1),
     sqlResources := generateSQLModel.value.map(_._2),
-    (sourceGenerators in Compile) += sqlResources.taskValue,
-    (resourceGenerators in Compile) += sqlModelClasses.taskValue,
+    (sourceGenerators in Compile) += sqlModelClasses.taskValue,
+    (resourceGenerators in Compile) += sqlResources.taskValue,
     jdbcUser := "",
     jdbcPassword := ""
   )
