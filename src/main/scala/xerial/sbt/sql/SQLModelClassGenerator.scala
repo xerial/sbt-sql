@@ -25,7 +25,7 @@ object SQLModelClassGenerator extends xerial.core.log.Logger {
       }
     }
     else {
-      warn("buid.properties file not found")
+      warn("build.properties file not found")
     }
     p.getProperty("build_time", System.currentTimeMillis().toString).toLong
   }
@@ -81,7 +81,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
         info(s"${targetFile} is up-to-date")
       }
       else {
-        info(s"Generating ${targetFile} (${targetFile.lastModified()}), ${targetClassFile}")
+        info(s"Generating ${targetFile} (${targetFile.lastModified()}), ${targetClassFile} (${targetClassFile.lastModified()})")
         val sql = IO.read(sqlFile)
         val template = SQLTemplate(sql)
         val limit0 = wrapWithLimit0(template.populated)

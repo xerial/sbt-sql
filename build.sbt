@@ -33,12 +33,12 @@ releaseProcess := Seq[ReleaseStep](
       inquireVersions,
       runClean,
       runTest,
-      ReleaseStep(
-        action = {state =>
-          val extracted = Project extract state
-          extracted.runAggregated(scriptedTests in Global in extracted.get(thisProjectRef), state)
-        }
-      ),
+//      ReleaseStep(
+//        action = {state =>
+//          val extracted = Project extract state
+//          extracted.runAggregated(scriptedTests in Global in extracted.get(thisProjectRef), state)
+//        }
+//      ),
       setReleaseVersion,
       commitReleaseVersion,
       tagRelease,
