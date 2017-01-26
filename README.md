@@ -22,7 +22,7 @@ From this SQL file, sbt-sql generates Scala model classes and utility methods.
 * SQL can contain variables `${(variable name):(type)}`, and sbt-sql generates a function to populate them, such as `Nasdaq.sql(start, end)`. So the SQL file with template variables can be called as if it were a function in Scala.
 
 ### Generated Files 
-**target/src_managed/main/test/Nasdaq.scala**
+**target/src_managed/main/sample/Nasdaq.scala**
 ```scala
 package sample
 import java.sql.ResultSet
