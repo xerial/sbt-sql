@@ -17,10 +17,9 @@ select * from sample_datasets.nasdaq
 where TD_TIME_RANGE(time, '${start:String}', '${end:String}')
 ```
 
-From this SQL file, sbt-sql generates Scala model classes corresponding this SQL
+From this SQL file, sbt-sql generates Scala model classes and utility methods.
 
-SQL can contain variables `${...:(type name)}`, and sbt-sql generate a function to populated  
-them: `Nasdaq.sql(start, end)`. 
+* SQL can contain variables `${(variable name):(type)}`, and sbt-sql generates a function to populate them, such as `Nasdaq.sql(start, end)`. So the SQL file with template variables can be called as if it were a function in Scala.
 
 ### Generated Files 
 **target/src_managed/main/test/Nasdaq.scala**
