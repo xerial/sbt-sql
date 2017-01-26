@@ -3,6 +3,7 @@ import ReleaseTransformations._
 val SCALA_VERSION = "2.10.6"
 
 organization := "org.xerial.sbt"
+sonatypeProfileName := "org.xerial"
 organizationName := "Xerial project"
 name := "sbt-sql"
 organizationHomepage := Some(new URL("http://xerial.org/"))
