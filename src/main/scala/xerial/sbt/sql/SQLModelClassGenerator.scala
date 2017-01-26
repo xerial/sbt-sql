@@ -91,8 +91,8 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
         val template = SQLTemplate(sql)
         val limit0 = wrapWithLimit0(template.populated)
         val schema = checkResultSchema(limit0)
-        info(s"template:\n${template.noParam}")
-        info(schema)
+        //info(s"template:\n${template.noParam}")
+        //info(schema)
 
         // Write SQL template without type annotation
         IO.write(targetFile, template.noParam)
