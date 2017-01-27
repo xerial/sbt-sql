@@ -126,7 +126,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
       s"rs.${c.reader.rsMethod}(${i+1})"
     }
 
-    val columnList = schema.columns.map(_.qname).mkString(", ")
+    val columnList = schema.columns.map(_.qname)
 
     val code =
       s"""package ${packageName}
@@ -156,7 +156,11 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
          |class ${name}(
          |  ${params.mkString(",\n  ")}
          |) {
-         |  def toSeq : Seq[Any] = Seq(${columnList})
+         |  def toSeq : Seq[Any] = {
+         |    val b = Seq.newBuilder[Any]
+         |    ${columnList.map(q => "b += " + q).mkString("\n    ")}
+         |    b.result
+         |  }
          |  override def toString = toSeq.mkString("\t")
          |}
          |""".stripMargin
