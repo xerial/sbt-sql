@@ -161,7 +161,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
          |    ${columnList.map(q => "b += " + q).mkString("\n    ")}
          |    b.result
          |  }
-         |  override def toString = toSeq.mkString("\t")
+         |  override def toString = toSeq.mkString("\\t")
          |}
          |""".stripMargin
 
