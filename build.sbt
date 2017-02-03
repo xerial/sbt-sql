@@ -16,6 +16,7 @@ sbtPlugin := true
 parallelExecution := true
 crossPaths := false
 scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked")
+ScriptedPlugin.scriptedSettings
 scriptedBufferLog := false
 
 libraryDependencies ++= Seq(

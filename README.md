@@ -21,6 +21,13 @@ From this SQL file, sbt-sql generates Scala model classes and utility methods.
 
 * SQL can contain variables `${(variable name):(type)}`, and sbt-sql generates a function to populate them, such as `Nasdaq.sql(start, end)`. So the SQL file with template variables can be called as if it were a function in Scala.
 
+As default you can use [Treasure Data](http://www.treasuredata.com/) table. 
+All you need to do is to set your api key as JDBC user key in `build.sbt`.
+
+```
+jdbcUser := <Your API Key>
+```
+
 ### Generated Files 
 **target/src_managed/main/sample/Nasdaq.scala**
 ```scala
