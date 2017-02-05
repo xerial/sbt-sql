@@ -71,6 +71,17 @@ case class SQLTemplate(orig:String, params:Seq[TemplateParam]) {
     String.format(template, params.result():_*)
   }
 
+  def packCode : String = {
+    val s = new StringBuilder
+    for(p <- params) {
+      p.typeName match {
+        case "String" => s"packString(${p.name})"
+      }
+    }
+
+    s.result
+  }
+
 }
 
 case class TemplateParam(name:String, typeName:String, line:Int, start:Int, end:Int) {

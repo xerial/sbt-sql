@@ -2,15 +2,15 @@ package xerial.sbt.sql
 
 import java.sql.JDBCType._
 
-abstract class ColumnReader(val name:String, val rsMethod:String)
-case object BooleanColumn extends ColumnReader("Boolean", "getBoolean")
-case object IntColumn extends ColumnReader("Int", "getInt")
-case object LongColumn extends ColumnReader("Long", "getLong")
-case object FloatColumn extends ColumnReader("Float", "getFloat")
-case object DoubleColumn extends ColumnReader("Double", "getDouble")
-case object StringColumn extends ColumnReader("String", "getString")
-case object ArrayColumn extends ColumnReader("java.sql.Array", "getArray")
-case object MapColumn extends ColumnReader("AnyRef", "getObject")
+abstract class ColumnAccess(val name:String, val rsMethod:String)
+case object BooleanColumn extends ColumnAccess("Boolean", "getBoolean")
+case object IntColumn extends ColumnAccess("Int", "getInt")
+case object LongColumn extends ColumnAccess("Long", "getLong")
+case object FloatColumn extends ColumnAccess("Float", "getFloat")
+case object DoubleColumn extends ColumnAccess("Double", "getDouble")
+case object StringColumn extends ColumnAccess("String", "getString")
+case object ArrayColumn extends ColumnAccess("java.sql.Array", "getArray")
+case object MapColumn extends ColumnAccess("AnyRef", "getObject")
 
 /**
   *
@@ -18,7 +18,7 @@ case object MapColumn extends ColumnReader("AnyRef", "getObject")
 object SQLTypeMapping {
 
   // See also https://github.com/embulk/embulk-input-jdbc/blob/9ce3e5528a205f86e9c2892dd8a3739f685e07e7/embulk-input-jdbc/src/main/java/org/embulk/input/jdbc/getter/ColumnGetterFactory.java#L92
-  val default : java.sql.JDBCType => ColumnReader = {
+  val default : java.sql.JDBCType => ColumnAccess = {
     case BIT | BOOLEAN => BooleanColumn
 
     case TINYINT | SMALLINT => IntColumn

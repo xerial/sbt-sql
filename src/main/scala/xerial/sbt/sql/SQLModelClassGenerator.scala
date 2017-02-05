@@ -6,10 +6,32 @@ import java.util.Properties
 import sbt.{File, IO, _}
 
 case class Schema(columns: Seq[Column])
-case class Column(name: String, reader:ColumnReader, sqlType: java.sql.JDBCType, isNullable: Boolean) {
-  def qname = name match {
-    case "type" => "`type`"
-    case _ => name
+case class Column(qname: String, reader:ColumnAccess, sqlType: java.sql.JDBCType, isNullable: Boolean, elementType: java.sql.JDBCType = JDBCType.NULL) {
+  def packMethod(packerName:String) : String = {
+    reader match {
+      case BooleanColumn =>
+        s"${packerName}.packBoolean(${qname})"
+      case IntColumn =>
+        s"${packerName}.packInt(${qname})"
+      case LongColumn =>
+        s"${packerName}.packLong(${qname})"
+      case FloatColumn =>
+        s"${packerName}.packFloat(${qname})"
+      case DoubleColumn =>
+        s"${packerName}.packDouble(${qname})"
+      case StringColumn =>
+        s"${packerName}.packString(${qname})"
+      case ArrayColumn =>
+        s"""{
+           |  val arr = v.getArray()
+           |
+           |  ${packerName}.packArrayHeader(2)
+           |}
+         """.stripMargin
+      case MapColumn =>
+        // TODO
+        ""
+    }
   }
 }
 
@@ -54,17 +76,26 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
         val cols = m.getColumnCount
         val colTypes = (1 to cols).map {i =>
           val name = m.getColumnName(i)
+          val qname = name match {
+            case "type" => "`type`"
+            case _ => name
+          }
           val tpe = m.getColumnType(i)
           val jdbcType = JDBCType.valueOf(tpe)
+          val elementType = if(tpe == JDBCType.ARRAY) {
+
+          }
+          else
+            JDBCType.NULL
+
           val reader = typeMapping(jdbcType)
           val nullable = m.isNullable(i) != 0
-          Column(name, reader, jdbcType, nullable)
+          Column(qname, reader, jdbcType, nullable)
         }
         Schema(colTypes.toIndexedSeq)
       }
     }
   }
-
 
   def generate(config:GeneratorConfig) : Seq[(File, File)] = {
     // Submit queries using multi-threads to minimize the waiting time
@@ -109,24 +140,41 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
     result.result()
   }
 
-  def schemaToClass(origFile: File, baseDir: File, schema: Schema, template:SQLTemplate): String = {
+
+  def schemaToParamDef(schema:Schema) = {
+    schema.columns.map {c =>
+      s"val ${c.qname}:${c.reader.name}"
+    }
+  }
+
+  def schemaToResultSetReader(schema:Schema) = {
+    schema.columns.zipWithIndex.map { case (c, i) =>
+      s"rs.${c.reader.rsMethod}(${i+1})"
+    }
+  }
+
+  def schemaToColumNList(schema:Schema) = {
+    schema.columns.map(_.qname)
+  }
+
+  def schemaToPackerCode(schema:Schema, packerName:String = "packer") = {
+    for(c <- schema.columns) {
+      s"${packerName}.packXXX(${c.qname})"
+    }
+  }
+
+  def schemaToClass(origFile: File, baseDir: File, schema: Schema, sqlTemplate:SQLTemplate): String = {
     val packageName = origFile.relativeTo(baseDir).map {f =>
       Option(f.getParent).map(_.replaceAll("""[\\/]""", ".")).getOrElse("")
     }.getOrElse("")
     val name = origFile.getName.replaceAll("\\.sql$", "")
 
-    val params = schema.columns.map {c =>
-      s"val ${c.qname}:${c.reader.name}"
-    }
+    val params = schemaToParamDef(schema)
+    val rsReader = schemaToResultSetReader(schema)
+    val columnList = schemaToColumNList(schema)
 
-    val args = template.params.map(p => s"${p.name}:${p.typeName}")
-    val paramNames = template.params.map(_.name)
-
-    val rsReader = schema.columns.zipWithIndex.map { case (c, i) =>
-      s"rs.${c.reader.rsMethod}(${i+1})"
-    }
-
-    val columnList = schema.columns.map(_.qname)
+    val sqlTemplateArgs = sqlTemplate.params.map(p => s"${p.name}:${p.typeName}")
+    val paramNames = sqlTemplate.params.map(_.name)
 
     val code =
       s"""package ${packageName}
@@ -142,7 +190,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
          |      ${rsReader.mkString(",\n      ")}
          |    )
          |  }
-         |  def sql(${args.mkString(", ")}) : String = {
+         |  def sql(${sqlTemplateArgs.mkString(", ")}) : String = {
          |    var rendered = originalSql
          |    val params = Seq(${paramNames.map(x => "\"" + x + "\"").mkString(", ")})
          |    val args = Seq(${paramNames.mkString(", ")})
