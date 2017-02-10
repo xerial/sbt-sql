@@ -16,6 +16,7 @@ sbtPlugin := true
 parallelExecution := true
 crossPaths := false
 scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked")
+ScriptedPlugin.scriptedSettings
 scriptedBufferLog := false
 
 libraryDependencies ++= Seq(
@@ -33,13 +34,14 @@ releaseProcess := Seq[ReleaseStep](
       inquireVersions,
       runClean,
       runTest,
-//      ReleaseStep(
-//        action = {state =>
-//          val extracted = Project extract state
-//          extracted.runAggregated(scriptedTests in Global in extracted.get(thisProjectRef), state)
-//        }
-//      ),
+      ReleaseStep(
+        action = {state =>
+          val extracted = Project.extract(state)
+          extracted.runAggregated(scriptedTests in Global in extracted.get(thisProjectRef), state)
+        }
+      ),
       setReleaseVersion,
+      ReleaseStep(action = Command.process("bumpPluginVersion", _)),
       commitReleaseVersion,
       tagRelease,
       ReleaseStep(action = Command.process("publishSigned", _)),
@@ -57,3 +59,19 @@ resourceGenerators in Compile += Def.task {
     IO.write(buildProp, contents)
     Seq(buildProp)
   }.taskValue
+
+
+commands += Command.command("bumpPluginVersion") { state =>
+  val extracted = Project.extract(state)
+  val newVersion = extracted.get(version in ThisBuild)
+  val pluginSbt = file("src/sbt-test/sbt-sql") ** "project" ** "plugins.sbt"
+
+  for(f <- pluginSbt.get) {
+    state.log.info(s"update sbt-sql plugin version in ${f}")
+    val updated = (for(line <- IO.readLines(f)) yield {
+      line.replaceAll("""(.+\"sbt-sql\" % \")([^"]+)("\))""", s"$$1${newVersion}$$3")
+    })
+    IO.writeLines(f, updated)
+  }
+  state
+}

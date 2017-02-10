@@ -50,7 +50,8 @@ object SQL extends AutoPlugin {
 
   lazy val prestoSettings = sqlSettings ++ Seq(
     jdbcDriver := "com.facebook.presto.jdbc.PrestoDriver",
-    jdbcURL := "jdbc:presto://api-presto.treasuredata.com:443/td-presto"
+    jdbcURL := "jdbc:presto://api-presto.treasuredata.com:443/td-presto",
+    jdbcUser := sys.env.getOrElse("TD_API_KEY", "")
   )
 
   override def trigger = allRequirements
