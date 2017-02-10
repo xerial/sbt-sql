@@ -14,7 +14,7 @@ private[sql] case class JDBCConfig(
 /**
   *
   */
-class JDBCClient(config:JDBCConfig) extends Logger {
+class JDBCClient(config:JDBCConfig, l:LogSupport) {
   private def withResource[R <: AutoCloseable, U](r: R)(body: R => U): U = {
     try {
       body(r)
@@ -33,7 +33,7 @@ class JDBCClient(config:JDBCConfig) extends Logger {
 
   def submitQuery[U](conn:Connection, sql: String)(body: ResultSet => U): U = {
     withResource(conn.createStatement()) {stmt =>
-      info(s"running sql:\n${sql}")
+      l.info(s"Executing SQL:\n${sql}")
       withResource(stmt.executeQuery(sql)) {rs =>
         body(rs)
       }

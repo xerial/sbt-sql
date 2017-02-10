@@ -30,7 +30,7 @@ object SQL extends AutoPlugin {
     sqlDir := (sourceDirectory in Compile).value / "sql" / "presto",
     generateSQLModel := {
       val config = JDBCConfig(jdbcDriver.value, jdbcURL.value, jdbcUser.value, jdbcPassword.value)
-      val generator = new SQLModelClassGenerator(config) //, state.value.log)
+      val generator = new SQLModelClassGenerator(config, new SbtLogSupport(state.value.log)) //, state.value.log)
       generator.generate(
         GeneratorConfig(sqlDir.value,
           (managedSourceDirectories in Compile).value.head,

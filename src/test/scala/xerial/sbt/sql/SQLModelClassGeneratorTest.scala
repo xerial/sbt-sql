@@ -2,6 +2,8 @@ package xerial.sbt.sql
 
 import java.io.File
 
+import xerial.core.log.LoggerFactory
+
 /**
   *
   */
@@ -14,7 +16,8 @@ class SQLModelClassGeneratorTest extends Spec {
           url = "jdbc:presto://api-presto.treasuredata.com:443/td-presto",
           user = sys.env("TD_API_KEY"),
           password = ""
-        )
+        ),
+        new DebugLogSupport(LoggerFactory(classOf[SQLModelClassGenerator]))
       )
       g.generate(GeneratorConfig(
         new File("src/test/sql/presto"),

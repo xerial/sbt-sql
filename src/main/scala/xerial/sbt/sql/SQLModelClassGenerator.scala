@@ -57,8 +57,8 @@ object SQLModelClassGenerator extends xerial.core.log.Logger {
   }
 }
 
-class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Logger {
-  private val db = new JDBCClient(jdbcConfig)
+class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
+  private val db = new JDBCClient(jdbcConfig, log)
 
   protected val typeMapping = SQLTypeMapping.default
 
@@ -101,23 +101,25 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
     // Submit queries using multi-threads to minimize the waiting time
     val result = Seq.newBuilder[(File, File)]
     val buildTime = SQLModelClassGenerator.getBuildTime
-    info(s"SQLModelClassGenerator buildTime:${buildTime}")
+    log.info(s"SQLModelClassGenerator buildTime:${buildTime}")
 
     for (sqlFile <- (config.sqlDir ** "*.sql").get.par) {
       val path = sqlFile.relativeTo(config.sqlDir).get.getPath
       val targetFile = config.resourceTargetDir / path
       val targetClassFile = config.targetDir / path.replaceAll("\\.sql$", ".scala")
 
-      info(s"Processing ${sqlFile.relativeTo(config.sqlDir).getOrElse(sqlFile)}")
+      log.debug(s"Processing ${sqlFile.relativeTo(config.sqlDir).getOrElse(sqlFile)}")
       val latestTimestamp = Math.max(sqlFile.lastModified(), buildTime)
       if(targetFile.exists()
         && targetClassFile.exists()
         && latestTimestamp <= targetFile.lastModified()
         && latestTimestamp <= targetClassFile.lastModified()) {
-        info(s"${targetFile.relativeTo(config.targetDir).getOrElse(targetFile)} is up-to-date")
+        log.info(s"${targetFile.relativeTo(config.targetDir).getOrElse(targetFile)} is up-to-date")
       }
       else {
-        info(s"Generating ${targetFile} (${targetFile.lastModified()}), ${targetClassFile} (${targetClassFile.lastModified()})")
+        val currentDir = new File(".")
+        log.info(s"Generating SQL template: ${targetFile.relativeTo(currentDir)} (${targetFile.lastModified()})")
+        log.info(s"Generating model class: ${targetClassFile.relativeTo(currentDir)} (${targetClassFile.lastModified()})")
         val sql = IO.read(sqlFile)
         val template = SQLTemplate(sql)
         val limit0 = wrapWithLimit0(template.populated)
