@@ -201,13 +201,17 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
          |    rendered
          |  }
          |
-         |  def select(${sqlArgList})(implicit conn:java.sql.Connection) : Iterator[${name}] = {
+         |  def select(${sqlArgList})(implicit conn:java.sql.Connection) : Seq[${name}] = {
          |    val query = sql(${paramNames.mkString(", ")})
          |    val stmt = conn.createStatement()
          |    try {
          |      val rs = stmt.executeQuery(query)
          |      try {
-         |        Iterator.continually(rs.next).takeWhile(_ == true).map(${name}(rs))
+         |        val b = Seq.newBuilder[${name}]
+         |        while(rs.next) {
+         |          b += ${name}(rs)
+         |        }
+         |        b.result
          |      }
          |      finally {
          |        rs.close()
