@@ -175,6 +175,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
 
     val sqlTemplateArgs = sqlTemplate.params.map(p => s"${p.name}:${p.typeName}")
     val paramNames = sqlTemplate.params.map(_.name)
+    val sqlArgList = sqlTemplateArgs.mkString(", ")
 
     val code =
       s"""package ${packageName}
@@ -190,7 +191,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
          |      ${rsReader.mkString(",\n      ")}
          |    )
          |  }
-         |  def sql(${sqlTemplateArgs.mkString(", ")}) : String = {
+         |  def sql(${sqlArgList}) : String = {
          |    var rendered = originalSql
          |    val params = Seq(${paramNames.map(x => "\"" + x + "\"").mkString(", ")})
          |    val args = Seq(${paramNames.mkString(", ")})
@@ -198,6 +199,23 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends xerial.core.log.Log
          |       rendered = rendered.replaceAll("\\\\$$\\\\{" + p + "\\\\}", arg.toString)
          |    }
          |    rendered
+         |  }
+         |
+         |  def select(${sqlArgList})(implicit conn:java.sql.Connection) : Iterator[${name}] = {
+         |    val query = sql(${paramNames.mkString(", ")})
+         |    val stmt = conn.createStatement()
+         |    try {
+         |      val rs = stmt.executeQuery(query)
+         |      try {
+         |        Iterator.continually(rs.next).takeWhile(_ == true).map(${name}(rs))
+         |      }
+         |      finally {
+         |        rs.close()
+         |      }
+         |    }
+         |    finally {
+         |      stmt.close()
+         |    }
          |  }
          |}
          |
