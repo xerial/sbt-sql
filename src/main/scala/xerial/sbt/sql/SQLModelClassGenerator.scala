@@ -108,28 +108,29 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
       val targetFile = config.resourceTargetDir / path
       val targetClassFile = config.targetDir / path.replaceAll("\\.sql$", ".scala")
 
-      log.debug(s"Processing ${sqlFile.relativeTo(config.sqlDir).getOrElse(sqlFile)}")
+      val sqlFilePath = sqlFile.relativeTo(config.sqlDir).getOrElse(sqlFile)
+      log.debug(s"Processing ${sqlFilePath}")
       val latestTimestamp = Math.max(sqlFile.lastModified(), buildTime)
       if(targetFile.exists()
         && targetClassFile.exists()
         && latestTimestamp <= targetFile.lastModified()
         && latestTimestamp <= targetClassFile.lastModified()) {
-        log.info(s"${targetFile.relativeTo(config.targetDir).getOrElse(targetFile)} is up-to-date")
+        log.debug(s"${targetFile.relativeTo(config.targetDir).getOrElse(targetFile)} is up-to-date")
       }
       else {
-        val currentDir = new File(".")
-        log.info(s"Generating SQL template: ${targetFile.relativeTo(currentDir)} (${targetFile.lastModified()})")
-        log.info(s"Generating model class: ${targetClassFile.relativeTo(currentDir)} (${targetClassFile.lastModified()})")
         val sql = IO.read(sqlFile)
         val template = SQLTemplate(sql)
         val limit0 = wrapWithLimit0(template.populated)
+        log.info(s"Checking the SQL result schema of ${sqlFilePath}")
         val schema = checkResultSchema(limit0)
         //info(s"template:\n${template.noParam}")
         //info(schema)
 
         // Write SQL template without type annotation
+        log.info(s"Generating SQL template: ${targetFile} (${targetFile.lastModified()})")
         IO.write(targetFile, template.noParam)
         val scalaCode = schemaToClass(sqlFile, config.sqlDir, schema, template)
+        log.info(s"Generating model class: ${targetClassFile} (${targetClassFile.lastModified()})")
         IO.write(targetClassFile, scalaCode)
         targetFile.setLastModified(latestTimestamp)
         targetClassFile.setLastModified(latestTimestamp)
