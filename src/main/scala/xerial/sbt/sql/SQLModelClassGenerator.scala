@@ -206,9 +206,13 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
          |
          |  def select(${sqlArgList})(implicit conn:java.sql.Connection) : Seq[${name}] = {
          |    val query = sql(${paramNames.mkString(", ")})
+         |    selectWith(query)
+         |  }
+         |
+         |  def selectWith(sql:String)(implicit conn:java.sql.Connection) : Seq[${name}] = {
          |    val stmt = conn.createStatement()
          |    try {
-         |      val rs = stmt.executeQuery(query)
+         |      val rs = stmt.executeQuery(sql)
          |      try {
          |        val b = Seq.newBuilder[${name}]
          |        while(rs.next) {
