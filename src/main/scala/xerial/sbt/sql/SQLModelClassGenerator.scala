@@ -6,43 +6,15 @@ import java.util.Properties
 import sbt.{File, IO, _}
 
 case class Schema(columns: Seq[Column])
-case class Column(qname: String, reader:ColumnAccess, sqlType: java.sql.JDBCType, isNullable: Boolean, elementType: java.sql.JDBCType = JDBCType.NULL) {
-  def packMethod(packerName:String) : String = {
-    reader match {
-      case BooleanColumn =>
-        s"${packerName}.packBoolean(${qname})"
-      case IntColumn =>
-        s"${packerName}.packInt(${qname})"
-      case LongColumn =>
-        s"${packerName}.packLong(${qname})"
-      case FloatColumn =>
-        s"${packerName}.packFloat(${qname})"
-      case DoubleColumn =>
-        s"${packerName}.packDouble(${qname})"
-      case StringColumn =>
-        s"${packerName}.packString(${qname})"
-      case ArrayColumn =>
-        s"""{
-           |  val arr = v.getArray()
-           |
-           |  ${packerName}.packArrayHeader(2)
-           |}
-         """.stripMargin
-      case MapColumn =>
-        // TODO
-        ""
-    }
-  }
-}
-
+case class Column(qname: String, reader:ColumnAccess, sqlType: java.sql.JDBCType, isNullable: Boolean, elementType: java.sql.JDBCType = JDBCType.NULL)
 case class GeneratorConfig(sqlDir:File, targetDir:File, resourceTargetDir:File)
 
 object SQLModelClassGenerator extends xerial.core.log.Logger {
 
-  lazy val getBuildTime : Long = {
+  private lazy val buildProps = {
     val p = new Properties()
     val in = this.getClass.getResourceAsStream("/org/xerial/sbt/sbt-sql/build.properties")
-    if(in != null) {
+    if (in != null) {
       try {
         p.load(in)
       }
@@ -53,7 +25,15 @@ object SQLModelClassGenerator extends xerial.core.log.Logger {
     else {
       warn("build.properties file not found")
     }
-    p.getProperty("build_time", System.currentTimeMillis().toString).toLong
+    p
+  }
+
+
+  lazy val getBuildTime : Long = {
+    buildProps.getProperty("build_time", System.currentTimeMillis().toString).toLong
+  }
+  lazy val getVersion : String = {
+    buildProps.getProperty("version", "unknown")
   }
 }
 
@@ -63,10 +43,10 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
   protected val typeMapping = SQLTypeMapping.default
 
   private def wrapWithLimit0(sql: String) = {
-    s"""SELECT * FROM (
+    s"""-- sbt-sql version:${SQLModelClassGenerator.getVersion} (build: ${SQLModelClassGenerator.getBuildTime})
+       |SELECT * FROM (
        |${sql}
-       |)
-       |LIMIT 0""".stripMargin
+       |) LIMIT 0""".stripMargin
   }
 
   def checkResultSchema(sql: String): Schema = {

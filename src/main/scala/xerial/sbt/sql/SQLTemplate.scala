@@ -57,6 +57,7 @@ case class SQLTemplate(orig:String, params:Seq[TemplateParam]) {
     val template = embeddedParamPattern.replaceAllIn(orig, { m: Match =>
       val name = m.group(1)
       val typeName = Option(m.group(3)).getOrElse("String")
+      val defaultValue = Option(m.group(5))
       val v = typeName match {
         case "String" => "dummy"
         case "Int" => "0"
@@ -67,23 +68,11 @@ case class SQLTemplate(orig:String, params:Seq[TemplateParam]) {
         case "SQL" | "sql" => ""
         case _ => ""
       }
-      params += v
+      params += defaultValue.getOrElse(v)
       "%s"
     })
     String.format(template, params.result():_*)
   }
-
-  def packCode : String = {
-    val s = new StringBuilder
-    for(p <- params) {
-      p.typeName match {
-        case "String" => s"packString(${p.name})"
-      }
-    }
-
-    s.result
-  }
-
 }
 
 case class TemplateParam(name:String, typeName:String, defaultValue:Option[String], line:Int, start:Int, end:Int) {
