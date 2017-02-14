@@ -158,7 +158,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
 
     val sqlTemplateArgs = sqlTemplate.params.map {p =>
       p.defaultValue match {
-        case None => s"${p.name}:${p.typeName}"
+        case None => s"${p.name}:${p.functionArgType}"
         case Some(v) => s"${p.name}:${p.functionArgType} = ${p.quotedValue}"
       }
     }
