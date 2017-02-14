@@ -8,7 +8,7 @@ import scala.util.matching.Regex.Match
 
 object SQLTemplate extends Logger {
 
-  val embeddedParamPattern = """\$\{\s*(\w+)\s*(:\s*(\w+))?\s*\}""".r
+  val embeddedParamPattern = """\$\{\s*(\w+)\s*(:\s*(\w+))?\s*(=\s*([^\}]+)\s*)?\}""".r
 
   sealed trait Fragment
   case class Text(s:String) extends Fragment
@@ -25,7 +25,8 @@ object SQLTemplate extends Logger {
       for (m <- embeddedParamPattern.findAllMatchIn(line)) {
         val name = m.group(1)
         val typeName = Option(m.group(3))
-        params += TemplateParam(name, typeName.getOrElse("String"), lineNum+1, m.start, m.end)
+        val defaultValue = Option(m.group(5))
+        params += TemplateParam(name, typeName.getOrElse("String"), defaultValue, lineNum+1, m.start, m.end)
       }
     }
     params.result()
@@ -63,6 +64,7 @@ case class SQLTemplate(orig:String, params:Seq[TemplateParam]) {
         case "Float" => "0.0"
         case "Double" => "0.0"
         case "Boolean" => "true"
+        case "SQL" | "sql" => ""
         case _ => ""
       }
       params += v
@@ -84,7 +86,20 @@ case class SQLTemplate(orig:String, params:Seq[TemplateParam]) {
 
 }
 
-case class TemplateParam(name:String, typeName:String, line:Int, start:Int, end:Int) {
+case class TemplateParam(name:String, typeName:String, defaultValue:Option[String], line:Int, start:Int, end:Int) {
+  def quotedValue : String = {
+    typeName match {
+      case "String" | "SQL" | "sql" => "\"" + defaultValue.get + "\""
+      case other => defaultValue.get
+    }
+  }
+  def functionArgType : String = {
+    typeName match {
+      case "SQL" | "sql" => "String"
+      case other => other
+    }
+  }
+
 }
 /**
   *

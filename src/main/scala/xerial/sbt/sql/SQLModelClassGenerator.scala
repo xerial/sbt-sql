@@ -176,7 +176,12 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
     val rsReader = schemaToResultSetReader(schema)
     val columnList = schemaToColumNList(schema)
 
-    val sqlTemplateArgs = sqlTemplate.params.map(p => s"${p.name}:${p.typeName}")
+    val sqlTemplateArgs = sqlTemplate.params.map {p =>
+      p.defaultValue match {
+        case None => s"${p.name}:${p.typeName}"
+        case Some(v) => s"${p.name}:${p.functionArgType} = ${p.quotedValue}"
+      }
+    }
     val paramNames = sqlTemplate.params.map(_.name)
     val sqlArgList = sqlTemplateArgs.mkString(", ")
 
