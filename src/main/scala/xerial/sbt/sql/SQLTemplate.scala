@@ -29,7 +29,14 @@ object SQLTemplate extends Logger {
         params += TemplateParam(name, typeName.getOrElse("String"), defaultValue, lineNum+1, m.start, m.end)
       }
     }
-    params.result()
+    // Dedup by preserving orders
+    val lst = params.result
+    var seen = Set.empty[String]
+    val result = for(p <- params.result if !seen.contains(p.name)) yield {
+      seen += p.name
+      p
+    }
+    result.toSeq
   }
 
   def removeParamType(sql:String) : String = {
