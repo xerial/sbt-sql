@@ -1,12 +1,24 @@
-sbt-sql
+sbt-sql 
 ====
 
 A sbt plugin for generating model classes from SQL query files in `src/main/sql`.
 
+## Why you need sbt-sql?
+
+ - Integrate the power of SQL and Scala
+     - If you write an SQL, it creates a Scala class to read the SQL result.
+ - Type safety
+     - No longer need to write a code like `ResultSet.getColumn("id")` etc. 
+     - Editors such as IntelliJ can show the SQL result parameter names and types.
+ - Reuse your SQL as a template
+     - You can embed parameters in your SQL with automatically generated Scala functions.
 
 ## Usage
 
 **project/plugins.sbt**
+
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sql/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sql)
+
 ```scala
 addSbtPlugin("org.xerial.sbt" % "sbt-sql" % "0.1")
 ```
