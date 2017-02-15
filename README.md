@@ -15,12 +15,36 @@ A sbt plugin for generating model classes from SQL query files in `src/main/sql`
 
 ## Usage
 
-**project/plugins.sbt**
-
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sql/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sql)
 
+**project/plugins.sbt**
 ```scala
-addSbtPlugin("org.xerial.sbt" % "sbt-sql" % "0.1")
+addSbtPlugin("org.xerial.sbt" % "sbt-sql" % "(version)")
+```
+
+**build.sbt**
+
+This is an example of using Presto JDBC driver:
+```scala
+// Add your JDBC driver to the dependency
+libraryDependencies += Seq(
+  // For using presto-jdbc
+  "com.facebook.presto" % "presto-jdbc" % "0.163"
+)
+
+// Configure yoru JDBC driver
+sqlDir := (sourceDirectory in Compile).value / "sql"
+jdbcDriver := "com.facebook.presto.jdbc.PrestoDriver"
+jdbcURL := "(jdbc url e.g., jdbc:presto://.... )"
+jdbcUser := "(jdbc user name)"
+jdbcPassword := "(jdbc password)"
+```
+
+For using Presto JDBC, you can simply use `prestoSettings`:
+```scala
+SQL.prestoSettings
+jdbcURL := "jdbc:presto://api-presto.treasuredata.com:443/td-presto"
+jdbcUser := sys.env.getOrElse("TD_API_KEY", "")
 ```
 
 **src/main/sql/presto/sample/Nasdaq.sql**
