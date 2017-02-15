@@ -27,7 +27,7 @@ object SQL extends AutoPlugin {
 
   // TODO split plugins for each jdbc drivers (sbt-sql-presto, sbt-sql-mysql, etc.)
   lazy val sqlSettings = Seq(
-    sqlDir := (sourceDirectory in Compile).value / "sql" / "presto",
+    sqlDir := (sourceDirectory in Compile).value / "sql",
     generateSQLModel := {
       val config = JDBCConfig(jdbcDriver.value, jdbcURL.value, jdbcUser.value, jdbcPassword.value)
       val generator = new SQLModelClassGenerator(config, new SbtLogSupport(state.value.log)) //, state.value.log)
@@ -43,12 +43,13 @@ object SQL extends AutoPlugin {
     (sourceGenerators in Compile) += sqlModelClasses.taskValue,
     (resourceGenerators in Compile) += sqlResources.taskValue,
     unmanagedSourceDirectories in Compile += sqlDir.value,
-    watchSources in Compile ++= (sqlDir.value ** "*.sql").get,
+    watchSources ++= (sqlDir.value ** "*.sql").get,
     jdbcUser := "",
     jdbcPassword := ""
   )
 
   lazy val prestoSettings = sqlSettings ++ Seq(
+    sqlDir := (sourceDirectory in Compile).value / "sql" / "presto",
     jdbcDriver := "com.facebook.presto.jdbc.PrestoDriver",
     jdbcURL := "jdbc:presto://api-presto.treasuredata.com:443/td-presto",
     jdbcUser := sys.env.getOrElse("TD_API_KEY", "")
@@ -56,7 +57,7 @@ object SQL extends AutoPlugin {
 
   override def trigger = allRequirements
   override def requires = JvmPlugin
-  override def projectSettings = prestoSettings
+  override def projectSettings = sqlSettings
 
 }
 
