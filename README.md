@@ -83,13 +83,13 @@ From this SQL file, sbt-sql generates Scala model classes and utility methods.
 package sample
 import java.sql.ResultSet
 
-object Nasdaq {
-  def path : String = "/sample/Nasdaq.sql"
+object nasdaq {
+  def path : String = "/sample/nasdaq.sql"
   def originalSql : String = {
     scala.io.Source.fromInputStream(this.getClass.getResourceAsStream(path)).mkString
   }
-  def apply(rs:ResultSet) : Nasdaq = {
-    new Nasdaq(
+  def apply(rs:ResultSet) : nasdaq = {
+    new nasdaq(
       rs.getString(1),
       rs.getDouble(2),
       rs.getLong(3),
@@ -99,18 +99,43 @@ object Nasdaq {
       rs.getLong(7)
     )
   }
-  def sql(start:String, end:String) : String = {
+  def sql() : String = {
     var rendered = originalSql
-    val params = Seq("start", "end")
-    val args = Seq(start, end)
+    val params = Seq()
+    val args = Seq()
     for((p, arg) <- params.zip(args)) {
        rendered = rendered.replaceAll("\\$\\{" + p + "\\}", arg.toString)
     }
     rendered
   }
+
+  def select()(implicit conn:java.sql.Connection) : Seq[nasdaq] = {
+    val query = sql()
+    selectWith(query)
+  }
+
+  def selectWith(sql:String)(implicit conn:java.sql.Connection) : Seq[nasdaq] = {
+    val stmt = conn.createStatement()
+    try {
+      val rs = stmt.executeQuery(sql)
+      try {
+        val b = Seq.newBuilder[nasdaq]
+        while(rs.next) {
+          b += nasdaq(rs)
+        }
+        b.result
+      }
+      finally {
+        rs.close()
+      }
+    }
+    finally {
+      stmt.close()
+    }
+  }
 }
 
-class Nasdaq(
+class nasdaq(
   val symbol:String,
   val open:Double,
   val volume:Long,
@@ -119,7 +144,18 @@ class Nasdaq(
   val close:Double,
   val time:Long
 ) {
-  ...
+  def toSeq : Seq[Any] = {
+    val b = Seq.newBuilder[Any]
+    b += symbol
+    b += open
+    b += volume
+    b += high
+    b += low
+    b += close
+    b += time
+    b.result
+  }
+  override def toString = toSeq.mkString("\t")
 }
 ``` 
  
