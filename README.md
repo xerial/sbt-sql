@@ -66,7 +66,7 @@ credentials += Credentials("Treasure Data",
 
 ## Writing SQL
 
-**src/main/sql/presto/sample/Nasdaq.sql**
+**src/main/sql/presto/sample/nasdaq.sql**
 ```sql
 select * from sample_datasets.nasdaq
 where TD_TIME_RANGE(time, '${start:String}', '${end:String}')
