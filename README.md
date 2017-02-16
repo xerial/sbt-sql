@@ -3,7 +3,7 @@ sbt-sql
 
 A sbt plugin for generating model classes from SQL query files in `src/main/sql`.
 
-# Why you need sbt-sql?
+## Why you need sbt-sql?
 
  - Integrate the power of SQL and Scala
      - If you write an SQL, it creates a Scala class to read the SQL result.
@@ -13,7 +13,7 @@ A sbt plugin for generating model classes from SQL query files in `src/main/sql`
  - Reuse your SQL as a template
      - You can embed parameters in your SQL with automatically generated Scala functions.
 
-# Usage
+## Usage
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sql/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sql)
 
@@ -40,7 +40,7 @@ jdbcUser := "(jdbc user name)"
 jdbcPassword := "(jdbc password)"
 ```
 
-## Using Presto
+### Using Presto
 For using Presto JDBC, import `prestoSettings`:
 ```scala
 SQL.prestoSettings
@@ -48,7 +48,7 @@ jdbcURL := "jdbc:presto://api-presto.treasuredata.com:443/td-presto"
 jdbcUser := "presto user name"
 ```
 
-## Using Treasure Data Presto
+### Using Treasure Data Presto
 
 To use [Treasure Data](http://www.treasuredata.com/) Presto, import tdPrestoSettings and
 set TD_API_KEY environment variable:
