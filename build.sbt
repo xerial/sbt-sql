@@ -46,6 +46,7 @@ releaseProcess := Seq[ReleaseStep](
       tagRelease,
       ReleaseStep(action = Command.process("publishSigned", _)),
       setNextVersion,
+      ReleaseStep(action = Command.process("bumpPluginVersion", _)),
       commitNextVersion,
       ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
       pushChanges
