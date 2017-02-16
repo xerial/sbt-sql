@@ -3,7 +3,7 @@ sbt-sql
 
 A sbt plugin for generating model classes from SQL query files in `src/main/sql`.
 
-## Why you need sbt-sql?
+# Why you need sbt-sql?
 
  - Integrate the power of SQL and Scala
      - If you write an SQL, it creates a Scala class to read the SQL result.
@@ -13,7 +13,7 @@ A sbt plugin for generating model classes from SQL query files in `src/main/sql`
  - Reuse your SQL as a template
      - You can embed parameters in your SQL with automatically generated Scala functions.
 
-## Usage
+# Usage
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sql/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sql)
 
@@ -40,12 +40,31 @@ jdbcUser := "(jdbc user name)"
 jdbcPassword := "(jdbc password)"
 ```
 
-For using Presto JDBC, you can simply use `prestoSettings`:
+## Using Presto
+For using Presto JDBC, import `prestoSettings`:
 ```scala
 SQL.prestoSettings
 jdbcURL := "jdbc:presto://api-presto.treasuredata.com:443/td-presto"
-jdbcUser := sys.env.getOrElse("TD_API_KEY", "")
+jdbcUser := "presto user name"
 ```
+
+## Using Treasure Data Presto
+
+To use [Treasure Data](http://www.treasuredata.com/) Presto, import tdPrestoSettings and
+set TD_API_KEY environment variable:
+```
+SQL.tdPrestoSettings
+```
+or add your TD API KEY to the sbt credential:
+`$HOME/.sbt/0.13/td.sbt`
+```
+credentials += Credentials("Treasure Data",
+        "api-presto.treasuredata.com",
+        "(your TD API KEY)",
+        "")
+```
+
+## Writing SQL
 
 **src/main/sql/presto/sample/Nasdaq.sql**
 ```sql
@@ -57,20 +76,6 @@ From this SQL file, sbt-sql generates Scala model classes and utility methods.
 
 * SQL can contain variables `${(variable name):(type)}`, and sbt-sql generates a function to populate them, such as `Nasdaq.sql(start, end)`. So the SQL file with template variables can be called as if it were a function in Scala.
 
-To use [Treasure Data](http://www.treasuredata.com/) Presto. Import tdPrestoSettings and
-set TD_API_KEY environment variable:
-```
-SQL.tdPrestoSettings
-```
-
-or add TD API KEY to your sbt credential:
-`$HOME/.sbt/0.13/td.sbt`
-```
-credentials += Credentials("Treasure Data",
-        "api-presto.treasuredata.com",
-        "(your TD API KEY)",
-        "")
-```
 
 ### Generated Files 
 **target/src_managed/main/sample/Nasdaq.scala**
