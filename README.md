@@ -57,10 +57,19 @@ From this SQL file, sbt-sql generates Scala model classes and utility methods.
 
 * SQL can contain variables `${(variable name):(type)}`, and sbt-sql generates a function to populate them, such as `Nasdaq.sql(start, end)`. So the SQL file with template variables can be called as if it were a function in Scala.
 
-For now sbt-sql works with [Treasure Data](http://www.treasuredata.com/) Presto. Set TD_API_KEY environment variable or
-set jdbcUser property:
+To use [Treasure Data](http://www.treasuredata.com/) Presto. Import tdPrestoSettings and
+set TD_API_KEY environment variable:
 ```
-jdbcUser := <Your API Key>
+SQL.tdPrestoSettings
+```
+
+or add TD API KEY to your sbt credential:
+`$HOME/.sbt/0.13/td.sbt`
+```
+credentials += Credentials("Treasure Data",
+        "api-presto.treasuredata.com",
+        "(your TD API KEY)",
+        "")
 ```
 
 ### Generated Files 
