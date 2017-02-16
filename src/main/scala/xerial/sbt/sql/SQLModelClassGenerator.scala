@@ -81,7 +81,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
     // Submit queries using multi-threads to minimize the waiting time
     val result = Seq.newBuilder[(File, File)]
     val buildTime = SQLModelClassGenerator.getBuildTime
-    log.info(s"SQLModelClassGenerator buildTime:${buildTime}")
+    log.debug(s"SQLModelClassGenerator buildTime:${buildTime}")
 
     for (sqlFile <- (config.sqlDir ** "*.sql").get.par) {
       val path = sqlFile.relativeTo(config.sqlDir).get.getPath
