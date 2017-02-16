@@ -12,7 +12,7 @@ object SQL extends AutoPlugin {
   trait Keys {
     val sqlDir       = settingKey[File]("A folder containing SQL files. e.g. src/main/sql")
     val jdbcDriver   = settingKey[String]("JDBC driver class name. e.g., com.facebook.presto.jdbc.PrestoDriver")
-    val jdbcURL      = settingKey[String]("JDBC connection URL. e.g., jdbc:presto://api-presto.treasuredata.com:443/td-presto")
+    val jdbcURL      = taskKey[String]("JDBC connection URL. e.g., jdbc:presto://api-presto.treasuredata.com:443/td-presto")
     val jdbcUser     = taskKey[String]("JDBC user name")
     val jdbcPassword = taskKey[String]("JDBC password")
 
@@ -40,19 +40,35 @@ object SQL extends AutoPlugin {
     },
     sqlModelClasses := generateSQLModel.value.map(_._1),
     sqlResources := generateSQLModel.value.map(_._2),
-    (sourceGenerators in Compile) += sqlModelClasses.taskValue,
-    (resourceGenerators in Compile) += sqlResources.taskValue,
-    unmanagedSourceDirectories in Compile += sqlDir.value,
+    sourceGenerators in Compile += sqlModelClasses.taskValue,
+    resourceGenerators in Compile += sqlResources.taskValue,
+    //managedSourceDirectories in Compile += sqlDir.value,
     watchSources ++= (sqlDir.value ** "*.sql").get,
     jdbcUser := "",
     jdbcPassword := ""
   )
 
-  lazy val prestoSettings = sqlSettings ++ Seq(
+  lazy val prestoSettings = Seq(
     sqlDir := (sourceDirectory in Compile).value / "sql" / "presto",
     jdbcDriver := "com.facebook.presto.jdbc.PrestoDriver",
-    jdbcURL := "jdbc:presto://api-presto.treasuredata.com:443/td-presto",
-    jdbcUser := sys.env.getOrElse("TD_API_KEY", "")
+    jdbcURL := "jdbc:presto://(your presto server url)/(catalog name)"
+  )
+
+  lazy val tdPrestoSettings = prestoSettings ++ Seq(
+    jdbcURL := {
+      val host = credentials.value.collectFirst {
+        case d: DirectCredentials if d.realm == "Treasure Data" =>
+          d.host
+      }.getOrElse("api-presto.treasuredata.com")
+      s"jdbc:presto://${host}:443/td-presto"
+    },
+    jdbcUser := {
+      val user = credentials.value.collectFirst {
+        case d: DirectCredentials if d.realm == "Treasure Data" =>
+          d.userName
+      }
+      user.orElse(sys.env.get("TD_API_KEY")).getOrElse("")
+    }
   )
 
   override def trigger = allRequirements
