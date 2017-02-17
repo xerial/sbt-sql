@@ -92,7 +92,7 @@ From this SQL file, sbt-sql generates Scala model classes and several utility me
 - Embed a String value
 ```sql
 select * from sample_datasets.nasdaq
-where smbl = '${symbol:String}'
+where symbol = '${symbol:String}'
 ```
 
 - Embed an input table name as a variable with the default value `sample_datasets.nasdaq`:
@@ -111,7 +111,7 @@ select * from ${table:SQL=sample_datasets.nasdaq}
 - SQL (For embedding an SQL expression as a String)
 
 ### Generated Files 
-**target/src_managed/main/sample/Nasdaq.scala**
+**target/src_managed/main/sample/nasdaq.scala**
 ```scala
 package sample
 import java.sql.ResultSet
