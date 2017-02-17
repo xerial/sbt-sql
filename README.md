@@ -69,13 +69,21 @@ credentials += Credentials("Treasure Data",
 **src/main/sql/presto/sample/nasdaq.sql**
 ```sql
 select * from sample_datasets.nasdaq
-where TD_TIME_RANGE(time, '${start:String}', '${end:String}')
+where time between ${start:Long} and ${end:Long}
 ```
 
-From this SQL file, sbt-sql generates Scala model classes and utility methods.
+From this SQL file, sbt-sql generates Scala model classes and several utility methods.
 
-* SQL can contain variables `${(variable name):(type)}`, and sbt-sql generates a function to populate them, such as `Nasdaq.sql(start, end)`. So the SQL file with template variables can be called as if it were a function in Scala.
+* SQL file can contain variables `${(variable name):(type)}`, and sbt-sql generates a function to populate them, such as `Nasdaq.select(start = xxxxx, end = yyyyy)`. 
 
+### Supported types
+- String
+- Int
+- Long
+- Boolean
+- Float
+- Double
+- SQL (For embedding an SQL expression as a String)
 
 ### Generated Files 
 **target/src_managed/main/sample/Nasdaq.scala**
@@ -99,18 +107,18 @@ object nasdaq {
       rs.getLong(7)
     )
   }
-  def sql() : String = {
+  def sql(start:Long, end:Long) : String = {
     var rendered = originalSql
-    val params = Seq()
-    val args = Seq()
+    val params = Seq("start", "end")
+    val args = Seq(start, end)
     for((p, arg) <- params.zip(args)) {
        rendered = rendered.replaceAll("\\$\\{" + p + "\\}", arg.toString)
     }
     rendered
   }
 
-  def select()(implicit conn:java.sql.Connection) : Seq[nasdaq] = {
-    val query = sql()
+  def select(start:Long, end:Long)(implicit conn:java.sql.Connection) : Seq[nasdaq] = {
+    val query = sql(start, end)
     selectWith(query)
   }
 
