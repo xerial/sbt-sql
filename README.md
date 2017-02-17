@@ -20,7 +20,18 @@ A sbt plugin for generating model classes from SQL query files in `src/main/sql`
 
 **project/plugins.sbt**
 ```scala
+// For Presto
+addSbtPlugin("org.xerial.sbt" % "sbt-sql-presto" % "(version)")
+
+// For Treasure Data Presto
+addSbtPlugin("org.xerial.sbt" % "sbt-sql-td" % "(version)")
+
+// For Generic JDBC drivers
 addSbtPlugin("org.xerial.sbt" % "sbt-sql" % "(version)")
+// Add your jdbc driver dependency for checking the result schema
+libraryDependencies += Seq(
+   // Add your jdbc driver here
+)
 ```
 
 **build.sbt**
@@ -33,38 +44,35 @@ libraryDependencies += Seq(
   "com.facebook.presto" % "presto-jdbc" % "0.163"
 )
 
+// You can change SQL file folder. The default is src/main/sql
+// sqlDir := (sourceDirectory in Compile).value / "sql"
+
 // Configure your JDBC driver
-sqlDir := (sourceDirectory in Compile).value / "sql"
 jdbcDriver := "com.facebook.presto.jdbc.PrestoDriver"
 jdbcURL := "(jdbc url e.g., jdbc:presto://.... )"
 jdbcUser := "(jdbc user name)"
 jdbcPassword := "(jdbc password)"
 ```
 
-### Using Presto
-For using Presto JDBC, import `prestoSettings`. 
+### sbt-sql-presto
+
+To use Presto SQL, add `sbt-sql-presto`. `src/main/sql/presto` is the SQL file directory.
+
 ```scala
-SQL.prestoSettings
 jdbcURL := "jdbc:presto://api-presto.treasuredata.com:443/td-presto"
 jdbcUser := "presto user name"
 ```
-This setting reads SQL files under `src/main/sql/presto` folder.
 
-### Using Treasure Data Presto
+### sbt-sql-td (Treasure Data Presto)
 
-To use [Treasure Data](http://www.treasuredata.com/) Presto, import tdPrestoSettings:
-```
-SQL.tdPrestoSettings
-```
-This sets jdbcUser from TD_API_KEY environment variable.
+To use [Treasure Data](http://www.treasuredata.com/) Presto, 
+you need to set TD_API_KEY environment variable. `jdbcUser` will be set to this value.
 
-Or you can add TD_API_KEY to the sbt credential:
+Alternatively you can set TD_API_KEY in your sbt credential:
 `$HOME/.sbt/0.13/td.sbt`
 ```
-credentials += Credentials("Treasure Data",
-        "api-presto.treasuredata.com",
-        "(your TD API KEY)",
-        "")
+credentials += 
+  Credentials("Treasure Data", "api-presto.treasuredata.com", "(your TD API KEY)", "")
 ```
 
 ## Writing SQL
