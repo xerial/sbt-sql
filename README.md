@@ -56,8 +56,7 @@ jdbcPassword := "(jdbc password)"
 
 ### sbt-sql-presto
 
-To use Presto SQL, add `sbt-sql-presto`. `src/main/sql/presto` is the SQL file directory.
-
+`sbt-sql-presto` plugin uses `src/main/sql/presto` as the SQL file directory. Configure `jdbcURL` and `jdbcUser` properties:
 ```scala
 jdbcURL := "jdbc:presto://api-presto.treasuredata.com:443/td-presto"
 jdbcUser := "presto user name"
@@ -65,10 +64,11 @@ jdbcUser := "presto user name"
 
 ### sbt-sql-td (Treasure Data Presto)
 
-To use [Treasure Data](http://www.treasuredata.com/) Presto, 
-you need to set TD_API_KEY environment variable. `jdbcUser` will be set to this value.
+To use [Treasure Data](http://www.treasuredata.com/) Presto, set TD_API_KEY environment variable. 
+`jdbcUser` will be set to this value.
 
 Alternatively you can set TD_API_KEY in your sbt credential:
+
 `$HOME/.sbt/0.13/td.sbt`
 ```
 credentials += 
