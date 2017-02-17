@@ -10,6 +10,7 @@ A sbt plugin for generating model classes from SQL query files in `src/main/sql`
  - Type safety
      - No longer need to write a code like `ResultSet.getColumn("id")` etc. 
      - Editors such as IntelliJ can show the SQL result parameter names and types.
+     - Even if you change the query statement, Scala compiler will check the types of the code using this SQL result. For example if you rename a column name from `id` to `ID`, the code using `id` will show a comilation error. Then you can notice any code break at compilation time, not as a run-time error.
  - Reuse your SQL as a template
      - You can embed parameters in your SQL with automatically generated Scala functions.
 
