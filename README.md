@@ -87,7 +87,7 @@ select * from sample_datasets.nasdaq
 where smbl = '${symbol:String}'
 ```
 
-- Embed the input table name as variable with the default value `sample_datasets.nasdaq`:
+- Embed an input table name as a variable with the default value `sample_datasets.nasdaq`:
 ```sql
 select * from ${table:SQL=sample_datasets.nasdaq}
 ```
