@@ -4,7 +4,6 @@ import sbt.ScriptedPlugin.scriptedBufferLog
 val SCALA_VERSION = "2.10.6"
 val PRESTO_VERSION = "0.163"
 
-
 val buildSettings = Seq(
   organization := "org.xerial.sbt",
   organizationName := "Xerial project",

@@ -1,6 +1,6 @@
-sonatypeProfileName := "org.xerial"
+sonatypeProfileName in ThisBuild := "org.xerial"
 
-pomExtra := {
+pomExtra in ThisBuild := {
   <url>http://xerial.org/</url>
     <licenses>
       <license>
