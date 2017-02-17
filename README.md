@@ -32,7 +32,7 @@ libraryDependencies += Seq(
   "com.facebook.presto" % "presto-jdbc" % "0.163"
 )
 
-// Configure yoru JDBC driver
+// Configure your JDBC driver
 sqlDir := (sourceDirectory in Compile).value / "sql"
 jdbcDriver := "com.facebook.presto.jdbc.PrestoDriver"
 jdbcURL := "(jdbc url e.g., jdbc:presto://.... )"
