@@ -42,7 +42,6 @@ object SQL extends AutoPlugin {
     sqlResources := generateSQLModel.value.map(_._2),
     sourceGenerators in Compile += sqlModelClasses.taskValue,
     resourceGenerators in Compile += sqlResources.taskValue,
-    //managedSourceDirectories in Compile += sqlDir.value,
     watchSources ++= (sqlDir.value ** "*.sql").get,
     jdbcUser := "",
     jdbcPassword := ""

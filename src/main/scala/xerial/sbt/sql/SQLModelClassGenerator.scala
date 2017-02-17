@@ -62,11 +62,6 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
           }
           val tpe = m.getColumnType(i)
           val jdbcType = JDBCType.valueOf(tpe)
-          val elementType = if(tpe == JDBCType.ARRAY) {
-
-          }
-          else
-            JDBCType.NULL
 
           val reader = typeMapping(jdbcType)
           val nullable = m.isNullable(i) != 0
