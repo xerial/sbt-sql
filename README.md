@@ -10,6 +10,7 @@ A sbt plugin for generating model classes from SQL query files in `src/main/sql`
  - Type safety
      - No longer need to write a code like `ResultSet.getColumn("id")` etc. 
      - Editors such as IntelliJ can show the SQL result parameter names and types.
+     - Even if you change the query statement, Scala compiler will check the SQL result type and the code using it. For example if you rename a column name from `id` to `ID`, the code using `id` will be a compilation error. So you can notice any code break at compilation time, not as a run-time error like `unknown column "id"`.
  - Reuse your SQL as a template
      - You can embed parameters in your SQL with automatically generated Scala functions.
 
@@ -32,7 +33,7 @@ libraryDependencies += Seq(
   "com.facebook.presto" % "presto-jdbc" % "0.163"
 )
 
-// Configure yoru JDBC driver
+// Configure your JDBC driver
 sqlDir := (sourceDirectory in Compile).value / "sql"
 jdbcDriver := "com.facebook.presto.jdbc.PrestoDriver"
 jdbcURL := "(jdbc url e.g., jdbc:presto://.... )"
