@@ -28,8 +28,7 @@ val buildSettings = Seq(
 commands += Command.command("bumpPluginVersion") {state =>
   val extracted = Project.extract(state)
   val newVersion = extracted.get(version in ThisBuild)
-  val pluginSbt = file("src/sbt-test/sbt-sql") ** "project" ** "plugins.sbt"
-
+  val pluginSbt = file(".") ** "src" / "sbt-test" ** "project" ** "plugins.sbt"
   for (f <- pluginSbt.get) {
     state.log.info(s"update sbt-sql plugin version in ${f}")
     val updated = (for (line <- IO.readLines(f)) yield {
