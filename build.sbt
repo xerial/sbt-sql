@@ -9,7 +9,6 @@ scriptedBufferLog := false
 val buildSettings = Seq(
   organization := "org.xerial.sbt",
   organizationName := "Xerial project",
-  name := "sbt-sql",
   organizationHomepage := Some(new URL("http://xerial.org/")),
   description := "A sbt plugin for generating model classes from SQL files",
   scalaVersion := SCALA_VERSION,
@@ -27,15 +26,6 @@ val buildSettings = Seq(
   )
 )
 
-resourceGenerators in Compile += Def.task {
-  val buildProp = (resourceManaged in Compile).value / "org" / "xerial" / "sbt" / "sbt-sql" / "build.properties"
-  val buildRev = Process("git" :: "rev-parse" :: "HEAD" :: Nil).!!.trim
-  val buildTime = file("src/main/scala/xerial/sbt/sql/SQLModelClassGenerator.scala").lastModified()
-  val contents = s"name=$name\nversion=${version.value}\nbuild_revision=$buildRev\nbuild_time=$buildTime"
-  IO.write(buildProp, contents)
-  Seq(buildProp)
-}.taskValue
-
 commands += Command.command("bumpPluginVersion") {state =>
   val extracted = Project.extract(state)
   val newVersion = extracted.get(version in ThisBuild)
@@ -51,8 +41,12 @@ commands += Command.command("bumpPluginVersion") {state =>
   state
 }
 
-lazy val core = Project(id="sbt-sql", base=file(".")).settings(
+lazy val root : Project = Project(id="sbt-sql-root", base=file(".")).settings(
   buildSettings,
+  publish := {},
+  publishLocal := {},
+  publishArtifact := false,
+  test := {},
   releaseTagName := {(version in ThisBuild).value},
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
@@ -76,11 +70,31 @@ lazy val core = Project(id="sbt-sql", base=file(".")).settings(
     ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
     pushChanges
   )
+).aggregate(base, jdbc, presto)
+
+lazy val base : Project = Project(id="sbt-sql-base", base= file("base")).settings(
+  buildSettings,
+  resourceGenerators in Compile += Def.task {
+    val buildProp = (resourceManaged in Compile).value / "org" / "xerial" / "sbt" / "sbt-sql" / "build.properties"
+    val buildRev = Process("git" :: "rev-parse" :: "HEAD" :: Nil).!!.trim
+    val buildTime = ((sourceDirectory in Compile).value / "xerial/sbt/sql/SQLModelClassGenerator.scala").lastModified()
+    val contents = s"name=$name\nversion=${version.value}\nbuild_revision=$buildRev\nbuild_time=$buildTime"
+    IO.write(buildProp, contents)
+    Seq(buildProp)
+  }.taskValue
 )
 
-lazy val presto = Project(id = "sbt-sql-presto", base = file("presto")).settings(
+lazy val jdbc : Project = Project(id = "sbt-sql", base = file("jdbc")).settings(
   buildSettings,
+  description := " A sbt plugin for generating model classes from SQL files",
+  libraryDependencies ++= Seq(
+  )
+).dependsOn(base)
+
+lazy val presto : Project = Project(id = "sbt-sql-presto", base = file("presto")).settings(
+  buildSettings,
+  description := " A sbt plugin for generating model classes from Presto SQL files",
   libraryDependencies ++= Seq(
     "com.facebook.presto" % "presto-jdbc" % PRESTO_VERSION
   )
-).dependsOn(core)
+).dependsOn(base)

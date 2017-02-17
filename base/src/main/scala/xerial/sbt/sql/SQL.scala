@@ -7,7 +7,7 @@ import sbt.plugins.JvmPlugin
 /**
   *
   */
-object SQL extends AutoPlugin {
+object SQL {
 
   trait Keys {
     val sqlDir       = settingKey[File]("A folder containing SQL files. e.g. src/main/sql")
