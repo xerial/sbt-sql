@@ -21,9 +21,7 @@ scriptedBufferLog := false
 
 libraryDependencies ++= Seq(
   "org.xerial" % "xerial-lens" % "3.2.3",
-  "org.msgpack" % "msgpack-core" % "0.8.11",
   "com.facebook.presto" % "presto-jdbc" % "0.163",
-  "org.scalactic" %% "scalactic" % "3.0.1",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )
 
