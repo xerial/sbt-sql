@@ -6,6 +6,23 @@ val PRESTO_VERSION = "0.163"
 
 val buildSettings = Seq(
   organization := "org.xerial.sbt",
+  sonatypeProfileName := "org.xerial",
+  licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
+  pomExtra in ThisBuild := {
+    <url>http://xerial.org/</url>
+    <scm>
+      <connection>scm:git:github.com/xerial/sbt-sql.git</connection>
+      <developerConnection>scm:git:git@github.com:xerial/sbt-sql.git</developerConnection>
+      <url>github.com/xerial/sbt-sql.git</url>
+    </scm>
+    <developers>
+      <developer>
+        <id>leo</id>
+        <name>Taro L. Saito</name>
+        <url>http://xerial.org/leo</url>
+      </developer>
+    </developers>
+  },
   organizationName := "Xerial project",
   organizationHomepage := Some(new URL("http://xerial.org/")),
   description := "A sbt plugin for generating model classes from SQL files",
