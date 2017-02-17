@@ -70,7 +70,7 @@ lazy val root : Project = Project(id="sbt-sql-root", base=file(".")).settings(
     ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
     pushChanges
   )
-).aggregate(base, jdbc, presto)
+).aggregate(base, generic, presto)
 
 lazy val base : Project = Project(id="sbt-sql-base", base= file("base")).settings(
   buildSettings,
@@ -84,7 +84,7 @@ lazy val base : Project = Project(id="sbt-sql-base", base= file("base")).setting
   }.taskValue
 )
 
-lazy val jdbc : Project = Project(id = "sbt-sql", base = file("jdbc")).settings(
+lazy val generic : Project = Project(id = "sbt-sql", base = file("generic")).settings(
   buildSettings,
   description := " A sbt plugin for generating model classes from SQL files",
   libraryDependencies ++= Seq(
