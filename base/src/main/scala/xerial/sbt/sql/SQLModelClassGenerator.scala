@@ -43,9 +43,9 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
   protected val typeMapping = SQLTypeMapping.default
 
   private def wrapWithLimit0(sql: String) = {
-    s"""-- sbt-sql version:${SQLModelClassGenerator.getVersion} (build: ${SQLModelClassGenerator.getBuildTime})
+    s"""-- sbt-sql version:${SQLModelClassGenerator.getVersion}
        |SELECT * FROM (
-       |${sql}
+       |${sql.trim}
        |) LIMIT 0""".stripMargin
   }
 
@@ -76,14 +76,16 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
     // Submit queries using multi-threads to minimize the waiting time
     val result = Seq.newBuilder[(File, File)]
     val buildTime = SQLModelClassGenerator.getBuildTime
-    log.debug(s"SQLModelClassGenerator buildTime:${buildTime}")
+    log.debug(s"SQLModelClassGenerator version:${SQLModelClassGenerator.getVersion}")
+
+    val baseDir = file(".")
 
     for (sqlFile <- (config.sqlDir ** "*.sql").get.par) {
       val path = sqlFile.relativeTo(config.sqlDir).get.getPath
       val targetFile = config.resourceTargetDir / path
       val targetClassFile = config.targetDir / path.replaceAll("\\.sql$", ".scala")
 
-      val sqlFilePath = sqlFile.relativeTo(config.sqlDir).getOrElse(sqlFile)
+      val sqlFilePath = sqlFile.relativeTo(baseDir).getOrElse(sqlFile)
       log.debug(s"Processing ${sqlFilePath}")
       val latestTimestamp = Math.max(sqlFile.lastModified(), buildTime)
       if(targetFile.exists()
@@ -98,14 +100,12 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
         val limit0 = wrapWithLimit0(template.populated)
         log.info(s"Checking the SQL result schema of ${sqlFilePath}")
         val schema = checkResultSchema(limit0)
-        //info(s"template:\n${template.noParam}")
-        //info(schema)
 
         // Write SQL template without type annotation
-        log.info(s"Generating SQL template: ${targetFile} (${targetFile.lastModified()})")
+        log.info(s"Generating SQL template: ${targetFile}")
         IO.write(targetFile, template.noParam)
         val scalaCode = schemaToClass(sqlFile, config.sqlDir, schema, template)
-        log.info(s"Generating model class: ${targetClassFile} (${targetClassFile.lastModified()})")
+        log.info(s"Generating model class: ${targetClassFile}")
         IO.write(targetClassFile, scalaCode)
         targetFile.setLastModified(latestTimestamp)
         targetClassFile.setLastModified(latestTimestamp)
