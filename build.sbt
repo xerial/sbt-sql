@@ -1,10 +1,9 @@
 import ReleaseTransformations._
+import sbt.ScriptedPlugin.scriptedBufferLog
 
 val SCALA_VERSION = "2.10.6"
 val PRESTO_VERSION = "0.163"
 
-ScriptedPlugin.scriptedSettings
-scriptedBufferLog := false
 
 val buildSettings = Seq(
   organization := "org.xerial.sbt",
@@ -14,7 +13,7 @@ val buildSettings = Seq(
   scalaVersion := SCALA_VERSION,
   publishMavenStyle := true,
   publishArtifact in Test := false,
-  pomIncludeRepository := { _ => false },
+  pomIncludeRepository := {_ => false},
   sbtPlugin := true,
   parallelExecution := true,
   crossPaths := false,
@@ -41,8 +40,10 @@ commands += Command.command("bumpPluginVersion") {state =>
   state
 }
 
-lazy val root : Project = Project(id="sbt-sql-root", base=file(".")).settings(
+lazy val root: Project = Project(id = "sbt-sql-root", base = file(".")).settings(
   buildSettings,
+  scriptedSettings,
+  scriptedBufferLog := false,
   publish := {},
   publishLocal := {},
   publishArtifact := false,
@@ -72,7 +73,7 @@ lazy val root : Project = Project(id="sbt-sql-root", base=file(".")).settings(
   )
 ).aggregate(base, generic, presto)
 
-lazy val base : Project = Project(id="sbt-sql-base", base= file("base")).settings(
+lazy val base: Project = Project(id = "sbt-sql-base", base = file("base")).settings(
   buildSettings,
   resourceGenerators in Compile += Def.task {
     val buildProp = (resourceManaged in Compile).value / "org" / "xerial" / "sbt" / "sbt-sql" / "build.properties"
@@ -84,14 +85,14 @@ lazy val base : Project = Project(id="sbt-sql-base", base= file("base")).setting
   }.taskValue
 )
 
-lazy val generic : Project = Project(id = "sbt-sql", base = file("generic")).settings(
+lazy val generic: Project = Project(id = "sbt-sql", base = file("generic")).settings(
   buildSettings,
   description := " A sbt plugin for generating model classes from SQL files",
   libraryDependencies ++= Seq(
   )
 ).dependsOn(base)
 
-lazy val presto : Project = Project(id = "sbt-sql-presto", base = file("presto")).settings(
+lazy val presto: Project = Project(id = "sbt-sql-presto", base = file("presto")).settings(
   buildSettings,
   description := " A sbt plugin for generating model classes from Presto SQL files",
   libraryDependencies ++= Seq(

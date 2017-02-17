@@ -7,8 +7,9 @@ import sbt.plugins.JvmPlugin
 /**
   *
   */
-object JDBC extends AutoPlugin {
+object GenericJDBC extends AutoPlugin {
   object autoImport extends SQL.Keys
+
   import autoImport._
 
   override def trigger = allRequirements
