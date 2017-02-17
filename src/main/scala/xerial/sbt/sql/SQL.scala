@@ -25,7 +25,7 @@ object SQL extends AutoPlugin {
 
   import autoImport._
 
-  // TODO split plugins for each jdbc drivers (sbt-sql-presto, sbt-sql-mysql, etc.)
+  // TODO split plugins for each jdbc drivers (mysqlSettings, prestoSettings, etc.)
   lazy val sqlSettings = Seq(
     sqlDir := (sourceDirectory in Compile).value / "sql",
     generateSQLModel := {
