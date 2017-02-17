@@ -69,7 +69,7 @@ To use [Treasure Data](http://www.treasuredata.com/) Presto, set TD_API_KEY envi
 
 Alternatively you can set TD_API_KEY in your sbt credential:
 
-`$HOME/.sbt/0.13/td.sbt`
+**$HOME/.sbt/0.13/td.sbt**
 ```
 credentials += 
   Credentials("Treasure Data", "api-presto.treasuredata.com", "(your TD API KEY)", "")
