@@ -41,21 +41,23 @@ jdbcPassword := "(jdbc password)"
 ```
 
 ### Using Presto
-For using Presto JDBC, import `prestoSettings`:
+For using Presto JDBC, import `prestoSettings`. 
 ```scala
 SQL.prestoSettings
 jdbcURL := "jdbc:presto://api-presto.treasuredata.com:443/td-presto"
 jdbcUser := "presto user name"
 ```
+This setting reads SQL files under `src/main/sql/presto` folder.
 
 ### Using Treasure Data Presto
 
-To use [Treasure Data](http://www.treasuredata.com/) Presto, import tdPrestoSettings and
-set TD_API_KEY environment variable:
+To use [Treasure Data](http://www.treasuredata.com/) Presto, import tdPrestoSettings:
 ```
 SQL.tdPrestoSettings
 ```
-or add your TD API KEY to the sbt credential:
+This sets jdbcUser from TD_API_KEY environment variable.
+
+Or you can add TD_API_KEY to the sbt credential:
 `$HOME/.sbt/0.13/td.sbt`
 ```
 credentials += Credentials("Treasure Data",
@@ -74,7 +76,21 @@ where time between ${start:Long} and ${end:Long}
 
 From this SQL file, sbt-sql generates Scala model classes and several utility methods.
 
-* SQL file can contain variables `${(variable name):(type)}`, and sbt-sql generates a function to populate them, such as `Nasdaq.select(start = xxxxx, end = yyyyy)`. 
+* SQL file can contain template variables `${(variable name):(type)}`, and sbt-sql generates a function to populate them, such as `Nasdaq.select(start = xxxxx, end = yyyyy)`. The variable can have a default value, e.g., `${x:String=hello}`. 
+
+### Template Variable Examples
+
+- Embed a String value
+```
+select * from sample_datasets.nasdaq
+where smbl = '${symbol:String}'
+```
+
+- Embed the input table name as variable with the default value `sample_datasets.nasdaq`:
+```
+select * from ${table:SQL=sample_datasets.nasdaq}
+```
+
 
 ### Supported types
 - String
