@@ -42,8 +42,6 @@ commands += Command.command("bumpPluginVersion") {state =>
 
 lazy val root: Project = Project(id = "sbt-sql-root", base = file(".")).settings(
   buildSettings,
-  scriptedSettings,
-  scriptedBufferLog := false,
   publish := {},
   publishLocal := {},
   publishArtifact := false,
@@ -71,7 +69,7 @@ lazy val root: Project = Project(id = "sbt-sql-root", base = file(".")).settings
     ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
     pushChanges
   )
-).aggregate(base, generic, presto)
+).aggregate(base, generic, presto, td)
 
 lazy val base: Project = Project(id = "sbt-sql-base", base = file("base")).settings(
   buildSettings,
@@ -95,6 +93,16 @@ lazy val generic: Project = Project(id = "sbt-sql", base = file("generic")).sett
 lazy val presto: Project = Project(id = "sbt-sql-presto", base = file("presto")).settings(
   buildSettings,
   description := " A sbt plugin for generating model classes from Presto SQL files",
+  libraryDependencies ++= Seq(
+    "com.facebook.presto" % "presto-jdbc" % PRESTO_VERSION
+  )
+).dependsOn(base)
+
+lazy val td: Project = Project(id = "sbt-sql-td", base = file("td")).settings(
+  buildSettings,
+  scriptedSettings,
+  scriptedBufferLog := false,
+  description := " A sbt plugin for generating model classes from Treasure Data Presto SQL files",
   libraryDependencies ++= Seq(
     "com.facebook.presto" % "presto-jdbc" % PRESTO_VERSION
   )

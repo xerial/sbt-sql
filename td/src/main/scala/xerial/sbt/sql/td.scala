@@ -1,26 +1,19 @@
 package xerial.sbt.sql
 
-import sbt.AutoPlugin
-
+import sbt.{AutoPlugin, DirectCredentials}
+import sbt.plugins.JvmPlugin
 import sbt.Keys._
 import sbt._
-import sbt.plugins.JvmPlugin
 
-/**
-  *
-  */
-object Presto extends AutoPlugin {
+object td extends AutoPlugin {
 
   object autoImport extends SQL.Keys
+
   import autoImport._
 
-  lazy val prestoSettings = Seq(
+  lazy val prestoSettings = SQL.sqlSettings ++ Seq(
     sqlDir := (sourceDirectory in Compile).value / "sql" / "presto",
     jdbcDriver := "com.facebook.presto.jdbc.PrestoDriver",
-    jdbcURL := "jdbc:presto://(your presto server url)/(catalog name)"
-  )
-
-  lazy val tdPrestoSettings = prestoSettings ++ Seq(
     jdbcURL := {
       val host = credentials.value.collectFirst {
         case d: DirectCredentials if d.realm == "Treasure Data" =>
@@ -39,5 +32,5 @@ object Presto extends AutoPlugin {
 
   override def trigger = allRequirements
   override def requires = JvmPlugin
-  override def projectSettings = SQL.sqlSettings
+  override def projectSettings = prestoSettings
 }
