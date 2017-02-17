@@ -81,13 +81,13 @@ From this SQL file, sbt-sql generates Scala model classes and several utility me
 ### Template Variable Examples
 
 - Embed a String value
-```
+```sql
 select * from sample_datasets.nasdaq
 where smbl = '${symbol:String}'
 ```
 
 - Embed the input table name as variable with the default value `sample_datasets.nasdaq`:
-```
+```sql
 select * from ${table:SQL=sample_datasets.nasdaq}
 ```
 
