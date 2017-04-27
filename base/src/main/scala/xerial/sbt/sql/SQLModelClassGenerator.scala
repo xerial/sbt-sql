@@ -162,6 +162,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
          |import java.sql.ResultSet
          |
          |object ${name} {
+         |  def path : String = "/${packageName.replaceAll("\\.", "/")}/${name}.sql"
          |  def originalSql : String = ${embeddedSQL}
          |
          |  def apply(rs:ResultSet) : ${name} = {
