@@ -10,4 +10,4 @@
 
 # Confirm model file is generated
 > generateSQLModel
-$ exists target/scala-2.10/resource_managed/main/access_log.sql target/scala-2.10/src_managed/main/access_log.scala
+$ exists target/scala-2.10/src_managed/main/access_log.scala
