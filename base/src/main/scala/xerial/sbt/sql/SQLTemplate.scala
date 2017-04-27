@@ -9,13 +9,30 @@ import scala.util.matching.Regex.Match
 object SQLTemplate extends Logger {
 
   val embeddedParamPattern = """\$\{\s*(\w+)\s*(:\s*(\w+))?\s*(=\s*([^\}]+)\s*)?\}""".r
+  val importStatement = """@import\s+([\w.]+)(;)?""".r
 
   sealed trait Fragment
   case class Text(s:String) extends Fragment
   case class Param(name:String, typeName:String) extends Fragment
 
   def apply(sql:String) : SQLTemplate = {
+    preprocess(sql)
     SQLTemplate(sql, extractParam(sql))
+  }
+
+  private def preprocess(sql:String) {
+
+    for(line <- Source.fromString(sql).getLines()) yield {
+      line match {
+        case line if line.startsWith("@import ") =>
+          val importClass = line.replaceAll("^@import ", "").trim
+          info(importClass)
+        case functionArgs if line.startsWith("@(") =>
+          info(s"function args:${functionArgs}")
+        case other =>
+          line
+      }
+    }
   }
 
   def extractParam(sql:String) : Seq[TemplateParam] = {
