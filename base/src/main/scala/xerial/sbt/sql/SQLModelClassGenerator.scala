@@ -7,7 +7,7 @@ import sbt.{File, IO, _}
 
 case class Schema(columns: Seq[Column])
 case class Column(qname: String, reader:ColumnAccess, sqlType: java.sql.JDBCType, isNullable: Boolean, elementType: java.sql.JDBCType = JDBCType.NULL)
-case class GeneratorConfig(sqlDir:File, targetDir:File, resourceTargetDir:File)
+case class GeneratorConfig(sqlDir:File, targetDir:File)
 
 object SQLModelClassGenerator extends xerial.core.log.Logger {
 
@@ -72,9 +72,9 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
     }
   }
 
-  def generate(config:GeneratorConfig) : Seq[(File, File)] = {
+  def generate(config:GeneratorConfig) : Seq[File] = {
     // Submit queries using multi-threads to minimize the waiting time
-    val result = Seq.newBuilder[(File, File)]
+    val result = Seq.newBuilder[File]
     val buildTime = SQLModelClassGenerator.getBuildTime
     log.debug(s"SQLModelClassGenerator version:${SQLModelClassGenerator.getVersion}")
 
@@ -82,17 +82,15 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
 
     for (sqlFile <- (config.sqlDir ** "*.sql").get.par) {
       val path = sqlFile.relativeTo(config.sqlDir).get.getPath
-      val targetFile = config.resourceTargetDir / path
       val targetClassFile = config.targetDir / path.replaceAll("\\.sql$", ".scala")
 
       val sqlFilePath = sqlFile.relativeTo(baseDir).getOrElse(sqlFile)
       log.debug(s"Processing ${sqlFilePath}")
       val latestTimestamp = Math.max(sqlFile.lastModified(), buildTime)
-      if(targetFile.exists()
+      if(targetClassFile.exists()
         && targetClassFile.exists()
-        && latestTimestamp <= targetFile.lastModified()
         && latestTimestamp <= targetClassFile.lastModified()) {
-        log.debug(s"${targetFile.relativeTo(config.targetDir).getOrElse(targetFile)} is up-to-date")
+        log.debug(s"${targetClassFile.relativeTo(config.targetDir).getOrElse(targetClassFile)} is up-to-date")
       }
       else {
         val sql = IO.read(sqlFile)
@@ -102,17 +100,14 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
         val schema = checkResultSchema(limit0)
 
         // Write SQL template without type annotation
-        log.info(s"Generating SQL template: ${targetFile}")
-        IO.write(targetFile, template.noParam)
         val scalaCode = schemaToClass(sqlFile, config.sqlDir, schema, template)
         log.info(s"Generating model class: ${targetClassFile}")
         IO.write(targetClassFile, scalaCode)
-        targetFile.setLastModified(latestTimestamp)
         targetClassFile.setLastModified(latestTimestamp)
       }
 
       synchronized {
-        result += ((targetClassFile, targetFile))
+        result += targetClassFile
       }
     }
     result.result()
@@ -160,20 +155,22 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
     val paramNames = sqlTemplate.params.map(_.name)
     val sqlArgList = sqlTemplateArgs.mkString(", ")
 
+    val embeddedSQL = "\"\"\"" + sqlTemplate.noParam + "\"\"\""
+
     val code =
       s"""package ${packageName}
          |import java.sql.ResultSet
          |
          |object ${name} {
          |  def path : String = "/${packageName.replaceAll("\\.", "/")}/${name}.sql"
-         |  def originalSql : String = {
-         |    scala.io.Source.fromInputStream(this.getClass.getResourceAsStream(path)).mkString
-         |  }
+         |  def originalSql : String = ${embeddedSQL}
+         |
          |  def apply(rs:ResultSet) : ${name} = {
          |    new ${name}(
          |      ${rsReader.mkString(",\n      ")}
          |    )
          |  }
+         |
          |  def sql(${sqlArgList}) : String = {
          |    var rendered = originalSql
          |    val params = Seq(${paramNames.map(x => "\"" + x + "\"").mkString(", ")})
@@ -222,7 +219,6 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
          |}
          |""".stripMargin
 
-    //info(code)
     code
   }
 

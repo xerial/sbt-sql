@@ -14,10 +14,8 @@ object SQL {
     val jdbcURL      = taskKey[String]("JDBC connection URL. e.g., jdbc:presto://api-presto.treasuredata.com:443/td-presto")
     val jdbcUser     = taskKey[String]("JDBC user name")
     val jdbcPassword = taskKey[String]("JDBC password")
-
-    val generateSQLModel = taskKey[Seq[(File, File)]]("create model classes from SQL files")
+    val generateSQLModel = taskKey[Seq[File]]("create model classes from SQL files")
     val sqlModelClasses  = taskKey[Seq[File]]("Generated SQL model classes")
-    val sqlResources     = taskKey[Seq[File]]("Generated SQL files")
   }
 
   object autoImport extends Keys
@@ -32,15 +30,12 @@ object SQL {
       val generator = new SQLModelClassGenerator(config, new SbtLogSupport(state.value.log)) //, state.value.log)
       generator.generate(
         GeneratorConfig(sqlDir.value,
-          (managedSourceDirectories in Compile).value.head,
-          (managedResourceDirectories in Compile).value.head
+          (managedSourceDirectories in Compile).value.head
         )
       )
     },
-    sqlModelClasses := generateSQLModel.value.map(_._1),
-    sqlResources := generateSQLModel.value.map(_._2),
+    sqlModelClasses := generateSQLModel.value,
     sourceGenerators in Compile += sqlModelClasses.taskValue,
-    resourceGenerators in Compile += sqlResources.taskValue,
     watchSources ++= (sqlDir.value ** "*.sql").get,
     jdbcUser := "",
     jdbcPassword := ""

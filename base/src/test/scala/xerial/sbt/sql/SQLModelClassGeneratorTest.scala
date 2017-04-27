@@ -21,8 +21,7 @@ class SQLModelClassGeneratorTest extends Spec {
       )
       g.generate(GeneratorConfig(
         new File("base/src/test/sql/presto"),
-        new File("target/sbt-0.13/src_managed/test"),
-        new File("target/sbt-0.13/resource_managed/test")
+        new File("target/sbt-0.13/src_managed/test")
       ))
     }
   }
