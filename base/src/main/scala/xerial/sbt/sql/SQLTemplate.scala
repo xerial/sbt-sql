@@ -2,118 +2,52 @@ package xerial.sbt.sql
 
 import xerial.core.log.Logger
 
-import scala.io.Source
 import scala.util.matching.Regex.Match
 
-
 object SQLTemplate extends Logger {
-
-  val embeddedParamPattern = """\$\{\s*(\w+)\s*(:\s*(\w+))?\s*(=\s*([^\}]+)\s*)?\}""".r
-  val importStatement = """@import\s+([\w.]+)(;)?""".r
-
   sealed trait Fragment
-  case class Text(s:String) extends Fragment
-  case class Param(name:String, typeName:String) extends Fragment
+  case class Text(s: String) extends Fragment
+  case class Param(name: String, typeName: String) extends Fragment
 
-  def apply(sql:String) : SQLTemplate = {
-    preprocess(sql)
-    SQLTemplate(sql, extractParam(sql))
-  }
-
-  private def preprocess(sql:String) {
-
-    for(line <- Source.fromString(sql).getLines()) yield {
-      line match {
-        case line if line.startsWith("@import ") =>
-          val importClass = line.replaceAll("^@import ", "").trim
-          info(importClass)
-        case functionArgs if line.startsWith("@(") =>
-          info(s"function args:${functionArgs}")
-        case other =>
-          line
-      }
-    }
-  }
-
-  def extractParam(sql:String) : Seq[TemplateParam] = {
-    // TODO remove comment lines
-    val params = Seq.newBuilder[TemplateParam]
-    for ((line, lineNum) <- Source.fromString(sql).getLines().zipWithIndex) {
-      for (m <- embeddedParamPattern.findAllMatchIn(line)) {
-        val name = m.group(1)
-        val typeName = Option(m.group(3))
-        val defaultValue = Option(m.group(5))
-        params += TemplateParam(name, typeName.getOrElse("String"), defaultValue, lineNum+1, m.start, m.end)
-      }
-    }
-    // Dedup by preserving orders
-    val lst = params.result
-    var seen = Set.empty[String]
-    val result = for(p <- params.result if !seen.contains(p.name)) yield {
-      seen += p.name
-      p
-    }
-    result.toSeq
-  }
-
-  def removeParamType(sql:String) : String = {
-    embeddedParamPattern.replaceAllIn(sql, { m: Match =>
-      val name = m.group(1)
-      "\\${" + name + "}"
-    })
-  }
+  def apply(sql: String): SQLTemplate = SQLTemplateParser.parse(sql)
 }
 
-import SQLTemplate._
+import xerial.sbt.sql.Preamble._
+import xerial.sbt.sql.SQLTemplateParser._
 
-case class SQLTemplate(orig:String, params:Seq[TemplateParam]) {
-  def noParam : String = removeParamType(orig)
-  def render(args:Seq[Any]) : String = {
+case class SQLTemplate(orig: String, params: Seq[Preamble.FunctionArg], imports: Seq[Preamble.Import]) {
+  def noParam: String = removeParamType(orig)
+  def render(args: Seq[Any]): String = {
     var rendered = noParam
-    for((p, arg) <- params.zip(args)) {
+    for ((p, arg) <- params.zip(args)) {
       rendered = rendered.replaceAll(s"\\$$\\{${p.name}\\}", arg.toString)
     }
     rendered
   }
 
-  def populated : String = {
-    val params = Seq.newBuilder[String]
-    val template = embeddedParamPattern.replaceAllIn(orig, { m: Match =>
+  def populated: String = {
+    val newParams = Seq.newBuilder[String]
+    val template = embeddedParamPattern.replaceAllIn(orig, {m: Match =>
       val name = m.group(1)
-      val typeName = Option(m.group(3)).getOrElse("String")
-      val defaultValue = Option(m.group(5))
-      val v = typeName match {
-        case "String" => "dummy"
-        case "Int" => "0"
-        case "Long" => "0"
-        case "Float" => "0.0"
-        case "Double" => "0.0"
-        case "Boolean" => "true"
-        case "SQL" | "sql" => ""
-        case _ => ""
+      params.find(_.name == name) match {
+        case Some(p) =>
+          val typeName = p.typeName
+          val defaultValue = p.defaultValue.orElse(Option(m.group(5)))
+          val v = typeName match {
+            case "String" => "dummy"
+            case "Int" => "0"
+            case "Long" => "0"
+            case "Float" => "0.0"
+            case "Double" => "0.0"
+            case "Boolean" => "true"
+            case "SQL" | "sql" => ""
+            case _ => ""
+          }
+          newParams += defaultValue.getOrElse(v)
+        case None =>
       }
-      params += defaultValue.getOrElse(v)
       "%s"
     })
-    String.format(template, params.result():_*)
+    String.format(template, newParams.result(): _*)
   }
 }
-
-case class TemplateParam(name:String, typeName:String, defaultValue:Option[String], line:Int, start:Int, end:Int) {
-  def quotedValue : String = {
-    typeName match {
-      case "String" | "SQL" | "sql" => "\"" + defaultValue.get + "\""
-      case other => defaultValue.get
-    }
-  }
-  def functionArgType : String = {
-    typeName match {
-      case "SQL" | "sql" => "String"
-      case other => other
-    }
-  }
-
-}
-/**
-  *
-  */

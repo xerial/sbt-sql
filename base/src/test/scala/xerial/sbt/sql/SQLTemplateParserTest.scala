@@ -1,6 +1,6 @@
 package xerial.sbt.sql
 
-import xerial.sbt.sql.SQLTemplateParser.FunctionArg
+import xerial.sbt.sql.Preamble.FunctionArg
 
 /**
   *
