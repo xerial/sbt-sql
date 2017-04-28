@@ -4,6 +4,9 @@ import java.sql.JDBCType
 import java.util.Properties
 
 import sbt.{File, IO, _}
+import xerial.sbt.sql.SQLTemplateParser.ParseError
+
+import scala.util.{Failure, Success, Try}
 
 case class Schema(columns: Seq[Column])
 case class Column(qname: String, reader:ColumnAccess, sqlType: java.sql.JDBCType, isNullable: Boolean, elementType: java.sql.JDBCType = JDBCType.NULL)
@@ -94,16 +97,21 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
       }
       else {
         val sql = IO.read(sqlFile)
-        val template = SQLTemplate(sql)
-        val limit0 = wrapWithLimit0(template.populated)
-        log.info(s"Checking the SQL result schema of ${sqlFilePath}")
-        val schema = checkResultSchema(limit0)
+        Try(SQLTemplate(sql)) match {
+          case Success(template) =>
+            val limit0 = wrapWithLimit0(template.populated)
+            log.info(s"Checking the SQL result schema of ${sqlFilePath}")
+            val schema = checkResultSchema(limit0)
 
-        // Write SQL template without type annotation
-        val scalaCode = schemaToClass(sqlFile, config.sqlDir, schema, template)
-        log.info(s"Generating model class: ${targetClassFile}")
-        IO.write(targetClassFile, scalaCode)
-        targetClassFile.setLastModified(latestTimestamp)
+            // Write SQL template without type annotation
+            val scalaCode = schemaToClass(sqlFile, config.sqlDir, schema, template)
+            log.info(s"Generating model class: ${targetClassFile}")
+            IO.write(targetClassFile, scalaCode)
+            targetClassFile.setLastModified(latestTimestamp)
+          case Failure(e) =>
+            log.error(s"Failed to parse ${sqlFile}: ${e.getMessage}")
+            throw e
+        }
       }
 
       synchronized {
