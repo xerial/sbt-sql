@@ -38,26 +38,20 @@ object SQLTemplateCompiler extends xerial.core.log.Logger {
       Try(TypeUtil.zero(Class.forName(typeName))).getOrElse(null)
   }
 
-  def compile(sqlTemplate: SQLTemplate) {
-    val imports = sqlTemplate.imports.map(x => s"import ${x.target}").mkString("\n")
-    val paramLength = sqlTemplate.params.length
-    val methodArgs = sqlTemplate.params.map(x => s"${x.name}:${x.functionArgType}").mkString(", ")
+  def compile(sqlTemplate: String) : SQLTemplate = {
+    val parsed = SQLTemplateParser.parse(sqlTemplate)
+    val params = parsed.args
+    val imports = parsed.imports.map(x => s"import ${x.target}").mkString("\n")
+    val paramLength = params.length
+    val methodArgs = params.map(x => s"${x.name}:${x.functionArgType}").mkString(", ")
     val functionArgs = {
-      val a = (sqlTemplate.params.map {p => s"${p.functionArgType}"}).mkString(", ")
-      if (paramLength > 1 ||
-        (paramLength == 1 && a.startsWith("("))) // tuple type only
-      {
+      val a = (params.map {p => s"${p.functionArgType}"}).mkString(", ")
+      if (paramLength > 1 || (paramLength == 1 && a.startsWith("("))) // tuple type only
         s"($a)"
-      }
-      else {
+      else
         a
-      }
     }
-    val sql = sqlTemplate.noParam
-
-    val sqlCode = "s\"\"\"" + sql + "\"\"\""
-
-    debug(sql)
+    val sqlCode = "s\"\"\"" + parsed.noParamSQL + "\"\"\""
     val funDef =
       s"""$imports
          |new (${functionArgs} => String) {
@@ -69,15 +63,15 @@ object SQLTemplateCompiler extends xerial.core.log.Logger {
      """.stripMargin
     debug(s"function def:\n${funDef}")
 
-    val parsed = toolBox.parse(funDef)
-    val code = toolBox.eval(parsed)
+    val code = toolBox.eval(toolBox.parse(funDef))
 
-    val p = (sqlTemplate.params.map {p =>
+    val p = (params.map {p =>
       p.defaultValue.getOrElse(defaultValueFor(p.typeName))
     }).toIndexedSeq
 
-    val populatedSQL = paramLength match {
-      case 0 => code.asInstanceOf[Function0[String]]
+    val populatedSQL : String = paramLength match {
+      case 0 =>
+        code.asInstanceOf[Function0[String]].apply()
       case 1 =>
         code.asInstanceOf[Function1[Any, String]].apply(p(0))
       case 2 =>
@@ -100,11 +94,30 @@ object SQLTemplateCompiler extends xerial.core.log.Logger {
         code.asInstanceOf[Function10[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, String]].apply(p(0), p(1), p(2), p(3), p(4), p(5), p(6), p(7), p(8), p(9))
       case 11 =>
         code.asInstanceOf[Function11[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, String]].apply(p(0), p(1), p(2), p(3), p(4), p(5), p(6), p(7), p(8), p(9), p(10))
+      case 12 =>
+        code.asInstanceOf[Function12[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any,Any, String]].apply(p(0), p(1), p(2), p(3), p(4), p(5), p(6), p(7), p(8), p(9), p(10), p(11))
+      case 13 =>
+        code.asInstanceOf[Function13[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any,Any, Any, String]].apply(p(0), p(1), p(2), p(3), p(4), p(5), p(6), p(7), p(8), p(9), p(10),p(11),p(12))
+      case 14 =>
+        code.asInstanceOf[Function14[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any,Any, Any, Any, String]].apply(p(0), p(1), p(2), p(3), p(4), p(5), p(6), p(7), p(8), p(9), p(10),p(11),p(12),p(13))
+      case 15 =>
+        code.asInstanceOf[Function15[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any,Any, Any, Any, Any, String]].apply(p(0), p(1), p(2), p(3), p(4), p(5), p(6), p(7), p(8), p(9), p(10),p(11),p(12),p(13),p(14))
       case other =>
-      // TODO
+        warn(s"Too many parameters in SQL template:\n${sqlTemplate}")
+        parsed.noParamSQL
     }
 
-    info(populatedSQL)
+    debug(s"populated SQL:\n${populatedSQL}")
+
+    new SQLTemplate(
+      orig = parsed.sql,
+      noParam = parsed.noParamSQL,
+      populated = populatedSQL,
+      params = params,
+      imports = parsed.imports
+    )
   }
+
+
 
 }

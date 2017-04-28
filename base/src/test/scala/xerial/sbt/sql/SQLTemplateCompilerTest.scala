@@ -8,11 +8,11 @@ class SQLTemplateCompilerTest extends Spec {
 
     "handle embedded Scala expression" in {
 
-      val t = SQLTemplate(
+      val t =
         """@import java.util.Locale
           |@(range:(Int,Int),str:String="test")
           |select ${range._1}, ${range._2}, '${str.toString}'
-        """.stripMargin)
+        """.stripMargin
 
       SQLTemplateCompiler.compile(t)
     }
