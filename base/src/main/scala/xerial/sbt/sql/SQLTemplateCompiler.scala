@@ -9,11 +9,6 @@ import scala.util.Try
   */
 object SQLTemplateCompiler extends xerial.core.log.Logger {
 
-  import scala.reflect.runtime.currentMirror
-  import scala.tools.reflect.ToolBox
-
-  private val toolBox = currentMirror.mkToolBox()
-
   private def defaultValueFor(typeName: String): Any = typeName match {
     case "SQL" | "sql" => ""
     case "String" => "dummy"
@@ -42,34 +37,51 @@ object SQLTemplateCompiler extends xerial.core.log.Logger {
     val parsed = SQLTemplateParser.parse(sqlTemplate)
     val params = parsed.args
     val imports = parsed.imports.map(x => s"import ${x.target}").mkString("\n")
-    val paramLength = params.length
-    val methodArgs = params.map(x => s"${x.name}:${x.functionArgType}").mkString(", ")
+
+    val (defaultParams, otherParams) = params.partition(_.defaultValue.isDefined)
+
+    val methodArgs = otherParams.map{ x =>
+      x.defaultValue match {
+        case Some(v) => s"${x.name}:${x.functionArgType}=${v}"
+        case None => s"${x.name}:${x.functionArgType}"
+      }
+    }.mkString(", ")
     val functionArgs = {
-      val a = (params.map {p => s"${p.functionArgType}"}).mkString(", ")
-      if (paramLength > 1 || (paramLength == 1 && a.startsWith("("))) // tuple type only
+      val paramLength = otherParams.length
+      val a = (otherParams.map {p => s"${p.functionArgType}"}).mkString(", ")
+      if(paramLength == 0)
+        "()"
+      else if (paramLength > 1 || (paramLength == 1 && a.startsWith("("))) // tuple type only
         s"($a)"
       else
         a
     }
+    val valDefs = defaultParams.map{x =>
+      s"    val ${x.name} = ${x.quotedValue}"
+    }.mkString("\n")
+
     val sqlCode = "s\"\"\"" + parsed.noParamSQL + "\"\"\""
     val funDef =
       s"""$imports
          |new (${functionArgs} => String) {
          |  def apply(${methodArgs}): String = {
-         |    $sqlCode
+         |$valDefs
+         |$sqlCode
          |  }
          |}
          |
      """.stripMargin
     debug(s"function def:\n${funDef}")
 
+    import scala.reflect.runtime.currentMirror
+    import scala.tools.reflect.ToolBox
+    val toolBox = currentMirror.mkToolBox()
     val code = toolBox.eval(toolBox.parse(funDef))
 
-    val p = (params.map {p =>
-      p.defaultValue.getOrElse(defaultValueFor(p.typeName))
-    }).toIndexedSeq
+    val p = otherParams.map(x => defaultValueFor(x.typeName)).toIndexedSeq
+    debug(s"function args:${p.mkString(", ")}")
 
-    val populatedSQL : String = paramLength match {
+    val populatedSQL : String = otherParams.length match {
       case 0 =>
         code.asInstanceOf[Function0[String]].apply()
       case 1 =>
@@ -107,7 +119,7 @@ object SQLTemplateCompiler extends xerial.core.log.Logger {
         parsed.noParamSQL
     }
 
-    debug(s"populated SQL:\n${populatedSQL}")
+    info(s"populated SQL:\n${populatedSQL}")
 
     new SQLTemplate(
       orig = parsed.sql,

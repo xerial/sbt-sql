@@ -173,7 +173,6 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
          |
          |object ${name} {
          |  def path : String = "/${packageName.replaceAll("\\.", "/")}/${name}.sql"
-         |  def originalSql : String = ${embeddedSQL}
          |
          |  def apply(rs:ResultSet) : ${name} = {
          |    new ${name}(
@@ -182,13 +181,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
          |  }
          |
          |  def sql(${sqlArgList}) : String = {
-         |    var rendered = originalSql
-         |    val params = Seq(${paramNames.map(x => "\"" + x + "\"").mkString(", ")})
-         |    val args = Seq(${paramNames.mkString(", ")})
-         |    for((p, arg) <- params.zip(args)) {
-         |       rendered = rendered.replaceAll("\\\\$$\\\\{" + p + "\\\\}", arg.toString)
-         |    }
-         |    rendered
+         |    s${embeddedSQL}
          |  }
          |
          |  def select(${sqlArgList})(implicit conn:java.sql.Connection) : Seq[${name}] = {
