@@ -99,7 +99,10 @@ object SQLTemplateParser extends Logger {
     def args : Parser[Seq[FunctionArg]] = arg ~ rep(',' ~ arg) ^^ { case first ~ rest => Seq(first) ++ rest.map(_._2).toSeq }
 
     def function: Parser[Function] = "@(" ~ args ~ ")" ^^ { case _ ~ args ~ _ => Function(args) }
-    def importStmt: Parser[Import] = "@import" ~ ident ^^ { case _ ~ i => Import(i.toString) }
+    def importStmt: Parser[Import] = "@import" ~ classRef ^^ { case _ ~ i => Import(i.toString) }
+    def classRef: Parser[String] = ident ~ rep('.' ~ ident) ^^ {
+      case h ~ t => (h :: t.map(_._2)).mkString(".")
+    }
     def preamble : Parser[Preamble] = function | importStmt
   }
 

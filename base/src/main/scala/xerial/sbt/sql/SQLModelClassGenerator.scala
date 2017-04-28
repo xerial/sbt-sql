@@ -163,11 +163,13 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
     val paramNames = sqlTemplate.params.map(_.name)
     val sqlArgList = sqlTemplateArgs.mkString(", ")
 
+    val additionalImports = sqlTemplate.imports.map(x => s"import ${x.target}").mkString("\n")
     val embeddedSQL = "\"\"\"" + sqlTemplate.noParam + "\"\"\""
 
     val code =
       s"""package ${packageName}
          |import java.sql.ResultSet
+         |${additionalImports}
          |
          |object ${name} {
          |  def path : String = "/${packageName.replaceAll("\\.", "/")}/${name}.sql"
