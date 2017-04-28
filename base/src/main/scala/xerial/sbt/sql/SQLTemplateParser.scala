@@ -95,8 +95,14 @@ object SQLTemplateParser extends Logger {
     def str: Parser[String] = stringLiteral ^^ { x => x.substring(1,x.length-1) }
     def value: Parser[String] = ident | str | decimalNumber | wholeNumber | floatingPointNumber
     def defaultValue : Parser[String] = "=" ~ value ^^ { case _ ~ v => v }
-    def arg : Parser[FunctionArg] = ident ~ ":" ~ ident ~ opt(defaultValue) ^^ { case n ~ _ ~ t ~ opt => FunctionArg(n, t, opt) }
+    def arg : Parser[FunctionArg] = ident ~ ":" ~ typeName ~ opt(defaultValue) ^^ { case n ~ _ ~ t ~ opt => FunctionArg(n, t, opt) }
     def args : Parser[Seq[FunctionArg]] = arg ~ rep(',' ~ arg) ^^ { case first ~ rest => Seq(first) ++ rest.map(_._2).toSeq }
+
+    def typeName: Parser[String] = ident | tupleType | genericType
+    def genericType : Parser[String] = ident ~ "[" ~ typeName ~ rep("," ~ typeName) ~ "]" ^^ { _._2 }
+    def tupleType: Parser[String] = "(" ~ typeName ~ rep("," ~ typeName) ~ ")" ^^ {
+      case _ ~ first ~ rest ~ _ => s"(${(Seq(first) ++ rest.map(_._2).toSeq).mkString(",")})"
+    }
 
     def function: Parser[Function] = "@(" ~ args ~ ")" ^^ { case _ ~ args ~ _ => Function(args) }
     def importStmt: Parser[Import] = "@import" ~ classRef ^^ { case _ ~ i => Import(i.toString) }
@@ -107,6 +113,7 @@ object SQLTemplateParser extends Logger {
   }
 
   val embeddedParamPattern = """\$\{\s*(\w+)\s*(:\s*(\w+))?\s*(=\s*([^\}]+)\s*)?\}""".r
+  val embeddedExprPattern = """\$\{([^\}]*)\}"""
 
   def extractParam(sql:String) : Seq[FunctionArg] = {
     // TODO remove comment lines

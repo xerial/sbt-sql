@@ -100,7 +100,6 @@ where symbol = '${symbol:String}'
 select * from ${table:SQL=sample_datasets.nasdaq}
 ```
 
-
 ### Supported types
 - String
 - Int

@@ -36,6 +36,7 @@ val buildSettings = Seq(
   scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
   libraryDependencies ++= Seq(
     "org.xerial" % "xerial-lens" % "3.2.3",
+    "org.scala-lang" % "scala-compiler" % scalaVersion.value,
     // Scala 2.10 contains parser combinators
     //"org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5",
     "org.scalatest" %% "scalatest" % "3.0.1" % "test",
@@ -57,36 +58,38 @@ commands += Command.command("bumpPluginVersion") {state =>
   state
 }
 
-lazy val root: Project = Project(id = "sbt-sql-root", base = file(".")).settings(
-  buildSettings,
-  publish := {},
-  publishLocal := {},
-  publishArtifact := false,
-  test := {},
-  releaseTagName := {(version in ThisBuild).value},
-  releaseProcess := Seq[ReleaseStep](
-    checkSnapshotDependencies,
-    inquireVersions,
-    runClean,
-    runTest,
-    ReleaseStep(
-      action = {state =>
-        val extracted = Project.extract(state)
-        extracted.runAggregated(scriptedTests in Global in extracted.get(thisProjectRef), state)
-      }
-    ),
-    setReleaseVersion,
-    ReleaseStep(action = Command.process("bumpPluginVersion", _)),
-    commitReleaseVersion,
-    tagRelease,
-    ReleaseStep(action = Command.process("publishSigned", _)),
-    setNextVersion,
-    ReleaseStep(action = Command.process("bumpPluginVersion", _)),
-    commitNextVersion,
-    ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
-    pushChanges
-  )
-).aggregate(base, generic, presto, td)
+lazy val root: Project =
+  Project(id = "sbt-sql-root", base = file("."))
+  .settings(
+    buildSettings,
+    publish := {},
+    publishLocal := {},
+    publishArtifact := false,
+    test := {},
+    releaseTagName := {(version in ThisBuild).value},
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      runClean,
+      runTest,
+      ReleaseStep(
+        action = {state =>
+          val extracted = Project.extract(state)
+          extracted.runAggregated(scriptedTests in Global in extracted.get(thisProjectRef), state)
+        }
+      ),
+      setReleaseVersion,
+      ReleaseStep(action = Command.process("bumpPluginVersion", _)),
+      commitReleaseVersion,
+      tagRelease,
+      ReleaseStep(action = Command.process("publishSigned", _)),
+      setNextVersion,
+      ReleaseStep(action = Command.process("bumpPluginVersion", _)),
+      commitNextVersion,
+      ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+      pushChanges
+    )
+  ).aggregate(base, generic, presto, td)
 
 lazy val base: Project = Project(id = "sbt-sql-base", base = file("base")).settings(
   buildSettings,
