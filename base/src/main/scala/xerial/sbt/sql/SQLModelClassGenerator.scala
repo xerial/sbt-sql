@@ -164,7 +164,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
     val sqlArgList = sqlTemplateArgs.mkString(", ")
 
     val additionalImports = sqlTemplate.imports.map(x => s"import ${x.target}").mkString("\n")
-    val embeddedSQL = "\"\"\"" + sqlTemplate.noParam + "\"\"\""
+    val embeddedSQL = "\"\"\"" + sqlTemplate.sql + "\"\"\""
 
     val code =
       s"""package ${packageName}

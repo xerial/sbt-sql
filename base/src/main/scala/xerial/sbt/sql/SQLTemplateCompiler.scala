@@ -2,7 +2,7 @@ package xerial.sbt.sql
 
 import xerial.lens.TypeUtil
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 /**
   *
@@ -14,8 +14,8 @@ object SQLTemplateCompiler extends xerial.core.log.Logger {
     case "String" => "dummy"
     case "Int" => 0
     case "Long" => 0L
-    case "Float" => 0.0
-    case "Double" => 0.0f
+    case "Float" => 0.0f
+    case "Double" => 0.0
     case "Boolean" => true
     case tuple if typeName.startsWith("(") =>
       val a = tuple.trim.substring(1, tuple.length - 1).split(",")
@@ -32,6 +32,7 @@ object SQLTemplateCompiler extends xerial.core.log.Logger {
     case _ =>
       Try(TypeUtil.zero(Class.forName(typeName))).getOrElse(null)
   }
+
 
   def compile(sqlTemplate: String) : SQLTemplate = {
     val parsed = SQLTemplateParser.parse(sqlTemplate)
@@ -60,7 +61,7 @@ object SQLTemplateCompiler extends xerial.core.log.Logger {
       s"    val ${x.name} = ${x.quotedValue}"
     }.mkString("\n")
 
-    val sqlCode = "s\"\"\"" + parsed.noParamSQL + "\"\"\""
+    val sqlCode = "s\"\"\"" + parsed.sql + "\"\"\""
     val funDef =
       s"""$imports
          |new (${functionArgs} => String) {
@@ -73,10 +74,16 @@ object SQLTemplateCompiler extends xerial.core.log.Logger {
      """.stripMargin
     debug(s"function def:\n${funDef}")
 
+
     import scala.reflect.runtime.currentMirror
     import scala.tools.reflect.ToolBox
     val toolBox = currentMirror.mkToolBox()
-    val code = toolBox.eval(toolBox.parse(funDef))
+    val code = Try(toolBox.eval(toolBox.parse(funDef))) match {
+      case Success(c) => c
+      case Failure(f) =>
+        error(s"Failed to compile code:\n${funDef}")
+        throw f
+    }
 
     val p = otherParams.map(x => defaultValueFor(x.typeName)).toIndexedSeq
     debug(s"function args:${p.mkString(", ")}")
@@ -116,14 +123,13 @@ object SQLTemplateCompiler extends xerial.core.log.Logger {
         code.asInstanceOf[Function15[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any,Any, Any, Any, Any, String]].apply(p(0), p(1), p(2), p(3), p(4), p(5), p(6), p(7), p(8), p(9), p(10),p(11),p(12),p(13),p(14))
       case other =>
         warn(s"Too many parameters in SQL template:\n${sqlTemplate}")
-        parsed.noParamSQL
+        parsed.sql
     }
 
-    info(s"populated SQL:\n${populatedSQL}")
+    debug(s"populated SQL:\n${populatedSQL}")
 
     new SQLTemplate(
-      orig = parsed.sql,
-      noParam = parsed.noParamSQL,
+      sql = parsed.sql,
       populated = populatedSQL,
       params = params,
       imports = parsed.imports

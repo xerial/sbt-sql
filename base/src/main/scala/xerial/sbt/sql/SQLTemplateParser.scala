@@ -40,7 +40,7 @@ object SQLTemplateParser extends Logger {
   case class Pos(line:Int, pos:Int)
   case class ParseError(message:String, pos:Option[Pos]) extends Exception(message)
 
-  case class ParseResult(sql:String, noParamSQL:String, args:Seq[FunctionArg], imports:Seq[Import])
+  case class ParseResult(sql:String, args:Seq[FunctionArg], imports:Seq[Import])
 
   def parse(template:String): ParseResult = {
     val preamble = Seq.newBuilder[Preamble]
@@ -80,7 +80,9 @@ object SQLTemplateParser extends Logger {
     }
 
     // Allow SQL template without any function header for backward compatibility
-    ParseResult(sql, removeParamType(sql), f.map(_.args).getOrElse(parametersInsideSQLBody), imports)
+    // Escape backslash
+    val sanitized = removeParamType(sql).replaceAll("\\\\","\\\\\\\\")
+    ParseResult(sanitized, f.map(_.args).getOrElse(parametersInsideSQLBody), imports)
   }
 
   def parseFunction(f:String) : Function = {
