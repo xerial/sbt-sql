@@ -79,35 +79,39 @@ credentials +=
 
 **src/main/sql/presto/sample/nasdaq.sql**
 ```sql
+@(start:Long, end:Long)
 select * from sample_datasets.nasdaq
-where time between ${start:Long} and ${end:Long}
+where time between ${start} and ${end}
 ```
 
 From this SQL file, sbt-sql generates Scala model classes and several utility methods.
 
-* SQL file can contain template variables `${(variable name):(type)}`, and sbt-sql generates a function to populate them, such as `Nasdaq.select(start = xxxxx, end = yyyyy)`. The variable can have a default value, e.g., `${x:String=hello}`. 
+* SQL file can contain template variables `${(Scala expression)}`.
+To define user input variables, use `@(name:type, ...)`. sbt-sql generates a function to populate them, such as `Nasdaq.select(start = xxxxx, end = yyyyy)`. The variable can have a default value, e.g., `@(x:String="hello")`. 
 
 ### Template Variable Examples
 
 - Embed a String value
 ```sql
+@(symbol:String)
 select * from sample_datasets.nasdaq
-where symbol = '${symbol:String}'
+where symbol = '${symbol}'
 ```
 
 - Embed an input table name as a variable with the default value `sample_datasets.nasdaq`:
 ```sql
-select * from ${table:SQL=sample_datasets.nasdaq}
+@(table:SQL="sample_datasets.nasdaq")
+select * from ${table}
+```
+SQL type can be used for embedding an SQL expression as a String.
+
+### Import statement
+
+You can use your own type for populating SQL templates by importing your class as follows:
+```
+@import your.own.class
 ```
 
-### Supported types
-- String
-- Int
-- Long
-- Boolean
-- Float
-- Double
-- SQL (For embedding an SQL expression as a String)
 
 ### Generated Files 
 **target/src_managed/main/sample/nasdaq.scala**
@@ -117,9 +121,6 @@ import java.sql.ResultSet
 
 object nasdaq {
   def path : String = "/sample/nasdaq.sql"
-  def originalSql : String = {
-    scala.io.Source.fromInputStream(this.getClass.getResourceAsStream(path)).mkString
-  }
   def apply(rs:ResultSet) : nasdaq = {
     new nasdaq(
       rs.getString(1),
@@ -132,14 +133,9 @@ object nasdaq {
     )
   }
   def sql(start:Long, end:Long) : String = {
-    var rendered = originalSql
-    val params = Seq("start", "end")
-    val args = Seq(start, end)
-    for((p, arg) <- params.zip(args)) {
-       rendered = rendered.replaceAll("\\$\\{" + p + "\\}", arg.toString)
-    }
-    rendered
-  }
+    s""""select * from sample_dataest.nasdaq
+where time between ${start} and ${end}    
+    """
 
   def select(start:Long, end:Long)(implicit conn:java.sql.Connection) : Seq[nasdaq] = {
     val query = sql(start, end)
