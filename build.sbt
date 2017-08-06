@@ -1,7 +1,6 @@
 import ReleaseTransformations._
 import sbt.ScriptedPlugin.scriptedBufferLog
 
-val SCALA_VERSION = "2.10.6"
 val PRESTO_VERSION = "0.163"
 
 val buildSettings = Seq(
@@ -23,16 +22,21 @@ val buildSettings = Seq(
       </developer>
     </developers>
   },
+  publishTo := Some(
+    if (isSnapshot.value)
+      Opts.resolver.sonatypeSnapshots
+    else
+      Opts.resolver.sonatypeStaging
+  ),
   organizationName := "Xerial project",
   organizationHomepage := Some(new URL("http://xerial.org/")),
   description := "A sbt plugin for generating model classes from SQL files",
-  scalaVersion := SCALA_VERSION,
   publishMavenStyle := true,
   publishArtifact in Test := false,
   pomIncludeRepository := {_ => false},
   sbtPlugin := true,
+  crossSbtVersions := Vector("1.0.0-RC3", "0.13.16"),
   parallelExecution := true,
-  crossPaths := false,
   scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
   libraryDependencies ++= Seq(
     "org.xerial" % "xerial-lens" % "3.2.3",
@@ -51,7 +55,7 @@ commands += Command.command("bumpPluginVersion") {state =>
   for (f <- pluginSbt.get) {
     state.log.info(s"update sbt-sql plugin version in ${f}")
     val updated = (for (line <- IO.readLines(f)) yield {
-      line.replaceAll("""(.+\"sbt-sql\" % \")([^"]+)("\))""", s"$$1${newVersion}$$3")
+      line.replaceAll("""(.+\"sbt-sql(-[a-z]+)?\" % \")([^"]+)("\))""", s"$$1${newVersion}$$4")
     })
     IO.writeLines(f, updated)
   }
