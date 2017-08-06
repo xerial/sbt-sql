@@ -1,6 +1,9 @@
 Release Notes 
 ===
 
+## 0.6
+ - Support sbt-1.0.0-RC3
+
 ## 0.5
  - Support Scala expression inside `${...}` block
  - Add support for function definition `@(...)` at the sql file header:
