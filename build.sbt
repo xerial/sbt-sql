@@ -71,6 +71,7 @@ lazy val root: Project =
     publishArtifact := false,
     test := {},
     releaseTagName := {(version in ThisBuild).value},
+    releaseCrossBuild := true,
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
       inquireVersions,
@@ -83,14 +84,14 @@ lazy val root: Project =
         }
       ),
       setReleaseVersion,
-      ReleaseStep(action = Command.process("bumpPluginVersion", _)),
+      releaseStepCommand("bumpPluginVersion"),
       commitReleaseVersion,
       tagRelease,
-      ReleaseStep(action = Command.process("publishSigned", _)),
+      releaseStepCommandAndRemaining("^ publishSigned"),
       setNextVersion,
-      ReleaseStep(action = Command.process("bumpPluginVersion", _)),
+      releaseStepCommand("bumpPluginVersion"),
       commitNextVersion,
-      ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+      releaseStepCommand("sonatypeReleaseAll"),
       pushChanges
     )
   ).aggregate(base, generic, presto, td)
