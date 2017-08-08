@@ -1,6 +1,6 @@
 import ReleaseTransformations._
 
-val PRESTO_VERSION = "0.163"
+val PRESTO_VERSION = "0.178"
 val SCALA_2_12 = "2.12.3"
 scalaVersion in Global := SCALA_2_12
 
