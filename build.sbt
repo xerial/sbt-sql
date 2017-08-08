@@ -66,7 +66,11 @@ commands += Command.command("bumpPluginVersion") {state =>
     })
     IO.writeLines(f, updated)
   }
-  state
+  val ret = sys.process.Process("git add src/sbt-test").!
+  ret match {
+    case 0 => state
+    case _ => state.fail
+  }
 }
 
 lazy val root: Project =

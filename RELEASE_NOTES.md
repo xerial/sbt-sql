@@ -1,7 +1,7 @@
 Release Notes 
 ===
 
-## 0.6
+## 0.7
  - Support sbt-1.0.0-RC3
  - Support SQLite (sbt-sql-sqlite plugin)
 
