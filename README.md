@@ -18,12 +18,14 @@ A sbt plugin for generating model classes from SQL query files in `src/main/sql`
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sql/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sql)
 
+### For sbt-1.0
+
 **project/plugins.sbt**
 ```scala
 // For Presto
 addSbtPlugin("org.xerial.sbt" % "sbt-sql-presto" % "(version)")
 
-// For SQLite
+// For SQLite (available since 0.7.0)
 addSbtPlugin("org.xerial.sbt" % "sbt-sql-sqlite" % "(version)")
 
 // For Treasure Data Presto
@@ -36,6 +38,8 @@ libraryDependencies ++= Seq(
    // Add your jdbc driver here
 )
 ```
+
+For sbt 0.13.x, use sbt-sql 0.5. We are dropping a support for sbt 0.13.x for some imcompatibilities.
 
 **build.sbt**
 
