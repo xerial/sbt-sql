@@ -2,6 +2,7 @@ package xerial.sbt.sql
 
 import sbt.Keys._
 import sbt._
+import sbt.internal.io.Source
 
 /**
   *
@@ -36,7 +37,15 @@ object SQL {
     },
     sqlModelClasses := generateSQLModel.value,
     sourceGenerators in Compile += sqlModelClasses.taskValue,
-    watchSources ++= (sqlDir.value ** "*.sql").get,
+    watchSources += new Source(
+      sqlDir.value,
+      new NameFilter {
+        override def accept(name: String): Boolean = {
+          name.endsWith(".sql")
+        }
+      },
+      NothingFilter
+    ),
     jdbcUser := "",
     jdbcPassword := ""
   )
