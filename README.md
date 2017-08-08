@@ -29,7 +29,7 @@ addSbtPlugin("org.xerial.sbt" % "sbt-sql-td" % "(version)")
 // For Generic JDBC drivers
 addSbtPlugin("org.xerial.sbt" % "sbt-sql" % "(version)")
 // Add your jdbc driver dependency for checking the result schema
-libraryDependencies += Seq(
+libraryDependencies ++= Seq(
    // Add your jdbc driver here
 )
 ```
@@ -39,7 +39,7 @@ libraryDependencies += Seq(
 This is an example of using Presto JDBC driver:
 ```scala
 // Add your JDBC driver to the dependency
-libraryDependencies += Seq(
+libraryDependencies ++= Seq(
   // For using presto-jdbc
   "com.facebook.presto" % "presto-jdbc" % "0.163"
 )
