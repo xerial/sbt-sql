@@ -47,7 +47,6 @@ val buildSettings = Seq(
   ),
   // sbt plugin settings
   sbtPlugin := true,
-  sbtVersion := "1.0.0-RC3",
   scalaVersion := SCALA_2_12,
   sbtVersion in Global := "1.0.0-RC3"
 //  scalaCompilerBridgeSource := {
@@ -101,7 +100,6 @@ lazy val root: Project =
 
 lazy val base: Project =
   Project(id = "sbt-sql-base", base = file("base"))
-  .enablePlugins(ScriptedPlugin)
   .settings(
     buildSettings,
     resourceGenerators in Compile += Def.task {
@@ -116,7 +114,8 @@ lazy val base: Project =
 
 lazy val generic: Project =
   Project(id = "sbt-sql", base = file("generic"))
-  .enablePlugins(ScriptedPlugin)
+// TODO add scripted test
+//  .enablePlugins(ScriptedPlugin)
   .settings(
     buildSettings,
     description := " A sbt plugin for generating model classes from SQL files",
@@ -126,7 +125,8 @@ lazy val generic: Project =
 
 lazy val presto: Project =
   Project(id = "sbt-sql-presto", base = file("presto"))
-  .enablePlugins(ScriptedPlugin)
+// TODO add scripted test
+//  .enablePlugins(ScriptedPlugin)
   .settings(
     buildSettings,
     description := " A sbt plugin for generating model classes from Presto SQL files",
@@ -137,7 +137,7 @@ lazy val presto: Project =
 
 lazy val td: Project =
   Project(id = "sbt-sql-td", base = file("td"))
-  .enablePlugins(ScriptedPlugin)
+//  .enablePlugins(ScriptedPlugin)
   .settings(
     buildSettings,
     scriptedBufferLog := false,
