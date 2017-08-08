@@ -6,15 +6,11 @@ import sbt.Keys._
 import sbt._
 import sbt.plugins.JvmPlugin
 
-/**
-  *
-  */
 object presto extends AutoPlugin {
-
   object autoImport extends SQL.Keys
   import autoImport._
 
-  lazy val settings = SQL.sqlSettings ++ Seq(
+  lazy val prestoSettings = SQL.sqlSettings ++ Seq(
     sqlDir := (sourceDirectory in Compile).value / "sql" / "presto",
     jdbcDriver := "com.facebook.presto.jdbc.PrestoDriver",
     jdbcURL := "jdbc:presto://(your presto server url)/(catalog name)"
@@ -22,5 +18,5 @@ object presto extends AutoPlugin {
 
   override def trigger = allRequirements
   override def requires = JvmPlugin
-  override def projectSettings = settings
+  override def projectSettings = prestoSettings
 }

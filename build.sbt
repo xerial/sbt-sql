@@ -98,7 +98,7 @@ lazy val root: Project =
       releaseStepCommand("sonatypeReleaseAll"),
       pushChanges
     )
-  ).aggregate(base, generic, presto, td)
+  ).aggregate(base, generic, sqlite, presto, td)
 
 lazy val base: Project =
   Project(id = "sbt-sql-base", base = file("base"))
@@ -120,6 +120,16 @@ lazy val generic: Project =
     buildSettings,
     description := " A sbt plugin for generating model classes from SQL files",
     libraryDependencies ++= Seq(
+    )
+  ).dependsOn(base)
+
+lazy val sqlite: Project =
+  Project(id = "sbt-sql-sqlite", base = file("sqlite"))
+  .settings(
+    buildSettings,
+    description := " A sbt plugin for genarting model classes from SQLite SQL files",
+    libraryDependencies ++= Seq(
+      "org.xerial" % "sqlite-jdbc" % "3.20.0"
     )
   ).dependsOn(base)
 

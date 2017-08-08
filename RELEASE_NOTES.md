@@ -3,6 +3,7 @@ Release Notes
 
 ## 0.6
  - Support sbt-1.0.0-RC3
+ - Support SQLite (sbt-sql-sqlite plugin)
 
 ## 0.5
  - Support Scala expression inside `${...}` block

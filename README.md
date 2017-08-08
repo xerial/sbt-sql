@@ -23,6 +23,9 @@ A sbt plugin for generating model classes from SQL query files in `src/main/sql`
 // For Presto
 addSbtPlugin("org.xerial.sbt" % "sbt-sql-presto" % "(version)")
 
+// For SQLite
+addSbtPlugin("org.xerial.sbt" % "sbt-sql-sqlite" % "(version)")
+
 // For Treasure Data Presto
 addSbtPlugin("org.xerial.sbt" % "sbt-sql-td" % "(version)")
 
@@ -39,10 +42,8 @@ libraryDependencies ++= Seq(
 This is an example of using Presto JDBC driver:
 ```scala
 // Add your JDBC driver to the dependency
-libraryDependencies ++= Seq(
-  // For using presto-jdbc
-  "com.facebook.presto" % "presto-jdbc" % "0.163"
-)
+// For using presto-jdbc
+libraryDependencies += "com.facebook.presto" % "presto-jdbc" % "0.178"
 
 // You can change SQL file folder. The default is src/main/sql
 // sqlDir := (sourceDirectory in Compile).value / "sql"
@@ -52,6 +53,13 @@ jdbcDriver := "com.facebook.presto.jdbc.PrestoDriver"
 jdbcURL := "(jdbc url e.g., jdbc:presto://.... )"
 jdbcUser := "(jdbc user name)"
 jdbcPassword := "(jdbc password)"
+```
+
+### sbt-sql-sqlite
+
+`sbt-sql-sqlite` plugin uses `src/main/sql/sqlite` as the SQL file directory. Configure `jdbcURL` and `jdbcUser` properties:
+```scala
+jdbcURL := "jdbc:sqlite:(sqlite db file path)"
 ```
 
 ### sbt-sql-presto
