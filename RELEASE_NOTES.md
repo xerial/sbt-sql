@@ -1,6 +1,9 @@
 Release Notes 
 ===
 
+## 0.8
+ - Upgrade to Presto 0.186
+
 ## 0.7
  - Support sbt-1.0.0-RC3
    - Dropped a support for 0.13.x
