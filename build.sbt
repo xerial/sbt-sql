@@ -48,7 +48,6 @@ val buildSettings = Seq(
   // sbt plugin settings
   sbtPlugin := true,
   scalaVersion := SCALA_2_12,
-  sbtVersion in Global := "1.0.0-RC3"
 //  scalaCompilerBridgeSource := {
 //    val sv = appConfiguration.value.provider.id.version
 //    ("org.scala-sbt" % "compiler-interface" % sv % "component").sources

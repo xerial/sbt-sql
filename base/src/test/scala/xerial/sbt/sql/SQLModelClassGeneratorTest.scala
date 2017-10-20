@@ -13,9 +13,9 @@ class SQLModelClassGeneratorTest extends Spec {
       val g = new SQLModelClassGenerator(
         JDBCConfig(
           driver = "com.facebook.presto.jdbc.PrestoDriver",
-          url = "jdbc:presto://api-presto.treasuredata.com:443/td-presto",
+          url = "jdbc:presto://api-presto.treasuredata.com:443/td-presto?SSL=true",
           user = sys.env("TD_API_KEY"),
-          password = ""
+          password = "dummy"
         ),
         new DebugLogSupport(LoggerFactory(classOf[SQLModelClassGenerator]))
       )

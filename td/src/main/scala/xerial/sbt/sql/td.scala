@@ -19,7 +19,7 @@ object td extends AutoPlugin {
         case d: DirectCredentials if d.realm == "Treasure Data" =>
           d.host
       }.getOrElse("api-presto.treasuredata.com")
-      s"jdbc:presto://${host}:443/td-presto"
+      s"jdbc:presto://${host}:443/td-presto?SSL=true"
     },
     jdbcUser := {
       val user = credentials.value.collectFirst {
@@ -27,7 +27,8 @@ object td extends AutoPlugin {
           d.userName
       }
       user.orElse(sys.env.get("TD_API_KEY")).getOrElse("")
-    }
+    },
+    jdbcPassword := "dummy-password"
   )
 
   override def trigger = allRequirements
