@@ -1,1 +1,1 @@
-addSbtPlugin("org.xerial.sbt" % "sbt-sql-td" % "0.8-SNAPSHOT")
+addSbtPlugin("org.xerial.sbt" % "sbt-sql-td" % "0.8")
