@@ -12,7 +12,7 @@ class SQLModelClassGeneratorTest extends Spec {
     "genarate case class code" in {
       val g = new SQLModelClassGenerator(
         JDBCConfig(
-          driver = "com.facebook.presto.jdbc.PrestoDriver",
+          driver = "io.prestosql.jdbc.PrestoDriver",
           url = "jdbc:presto://api-presto.treasuredata.com:443/td-presto?SSL=true",
           user = sys.env("TD_API_KEY"),
           password = "dummy"
