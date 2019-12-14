@@ -13,7 +13,7 @@ object td extends AutoPlugin {
 
   lazy val prestoSettings = SQL.sqlSettings ++ Seq(
     sqlDir := (sourceDirectory in Compile).value / "sql" / "presto",
-    jdbcDriver := "com.facebook.presto.jdbc.PrestoDriver",
+    jdbcDriver := "io.prestosql.jdbc.PrestoDriver",
     jdbcURL := {
       val host = credentials.value.collectFirst {
         case d: DirectCredentials if d.realm == "Treasure Data" =>

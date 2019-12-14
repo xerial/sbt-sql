@@ -9,7 +9,7 @@ import xerial.core.log.LoggerFactory
   */
 class SQLModelClassGeneratorTest extends Spec {
   "SQLModelClassGenerator" should {
-    "genarate case class code" in {
+    "generate case class code" in {
       val g = new SQLModelClassGenerator(
         JDBCConfig(
           driver = "io.prestosql.jdbc.PrestoDriver",
@@ -21,7 +21,7 @@ class SQLModelClassGeneratorTest extends Spec {
       )
       g.generate(GeneratorConfig(
         new File("base/src/test/sql/presto"),
-        new File("target/sbt-0.13/src_managed/test")
+        new File("target/sbt-1.0/src_managed/test")
       ))
     }
   }
