@@ -12,7 +12,7 @@ object presto extends AutoPlugin {
 
   lazy val prestoSettings = SQL.sqlSettings ++ Seq(
     sqlDir := (sourceDirectory in Compile).value / "sql" / "presto",
-    jdbcDriver := "com.facebook.presto.jdbc.PrestoDriver",
+    jdbcDriver := "io.prestosql.presto.jdbc.PrestoDriver",
     jdbcURL := "jdbc:presto://(your presto server url)/(catalog name)"
   )
 

@@ -1,7 +1,7 @@
 import ReleaseTransformations._
 
-val PRESTO_VERSION = "0.186"
-val SCALA_2_12 = "2.12.3"
+val PRESTO_VERSION = "326"
+val SCALA_2_12 = "2.12.10"
 scalaVersion in Global := SCALA_2_12
 
 val buildSettings = Seq(
@@ -43,7 +43,7 @@ val buildSettings = Seq(
     // Scala 2.10 contains parser combinators
     //"org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5",
     "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-    "com.facebook.presto" % "presto-jdbc" % PRESTO_VERSION % "test"
+    "io.prestosql" % "presto-jdbc" % PRESTO_VERSION % "test"
   ),
   // sbt plugin settings
   sbtPlugin := true,
@@ -142,7 +142,7 @@ lazy val presto: Project =
     buildSettings,
     description := " A sbt plugin for generating model classes from Presto SQL files",
     libraryDependencies ++= Seq(
-      "com.facebook.presto" % "presto-jdbc" % PRESTO_VERSION
+      "io.prestosql" % "presto-jdbc" % PRESTO_VERSION
     )
   ).dependsOn(base)
 
@@ -152,7 +152,7 @@ lazy val td: Project =
     buildSettings,
     description := " A sbt plugin for generating model classes from Treasure Data Presto SQL files",
     libraryDependencies ++= Seq(
-      "com.facebook.presto" % "presto-jdbc" % PRESTO_VERSION
+      "io.prestosql" % "presto-jdbc" % PRESTO_VERSION
     )
   )
   .dependsOn(base)
