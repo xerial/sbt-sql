@@ -1,1 +1,1 @@
-addSbtPlugin("org.xerial.sbt" % "sbt-sql-sqlite" % "0.9")
+addSbtPlugin("org.xerial.sbt" % "sbt-sql-sqlite" % "0.10-SNAPSHOT")
