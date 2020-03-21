@@ -5,9 +5,12 @@ import sbt.plugins.JvmPlugin
 import sbt.Keys._
 import sbt._
 
-object td extends AutoPlugin {
+object SbtSQLTreasureData
+        extends AutoPlugin
+{
 
-  object autoImport extends SQL.Keys
+  object autoImport
+          extends SQL.Keys
 
   import autoImport._
 
@@ -31,7 +34,8 @@ object td extends AutoPlugin {
     jdbcPassword := "dummy-password"
   )
 
-  override def trigger = allRequirements
+  override def trigger = noTrigger
+
   override def requires = JvmPlugin
   override def projectSettings = prestoSettings
 }
