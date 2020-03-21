@@ -1,4 +1,7 @@
 lazy val root =
-    (project in file(".")).settings(
-        name := "sbt-sql-test"
-    )
+  project
+          .in(file("."))
+          .enablePlugins(SbtSQLTreasureData)
+          .settings(
+            name := "sbt-sql-test"
+          )

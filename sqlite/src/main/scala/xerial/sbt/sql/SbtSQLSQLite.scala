@@ -5,10 +5,15 @@ import sbt.Keys.sourceDirectory
 import sbt.plugins.JvmPlugin
 
 /**
-  *
-  */
-object sqlite extends AutoPlugin {
-  object autoImport extends SQL.Keys
+ *
+ */
+object SbtSQLSQLite
+        extends AutoPlugin
+{
+
+  object autoImport
+          extends SQL.Keys
+
   import autoImport._
 
   lazy val sqliteSettings = SQL.sqlSettings ++ Seq(
@@ -18,7 +23,8 @@ object sqlite extends AutoPlugin {
     jdbcURL := "jdbc:sqlite::memory::"
   )
 
-  override def trigger = allRequirements
+  override def trigger = noTrigger
+
   override def requires = JvmPlugin
   override def projectSettings = sqliteSettings
 }

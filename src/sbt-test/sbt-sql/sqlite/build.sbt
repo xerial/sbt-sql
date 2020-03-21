@@ -1,3 +1,5 @@
+enablePlugins(SbtSQLJDBC)
+
 name := "sbt-sql-test"
 libraryDependencies ++= Seq("org.xerial" % "sqlite-jdbc" % "3.20.0")
 

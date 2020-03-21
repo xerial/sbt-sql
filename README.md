@@ -18,7 +18,7 @@ A sbt plugin for generating model classes from SQL query files in `src/main/sql`
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sql/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sql)
 
-### For sbt-1.0
+sbt-sql supports only sbt 1.3.x or higher.
 
 **project/plugins.sbt**
 ```scala
@@ -39,12 +39,13 @@ libraryDependencies ++= Seq(
 )
 ```
 
-For sbt 0.13.x, use sbt-sql 0.5. We are dropping a support for sbt 0.13.x for some imcompatibilities.
-
 **build.sbt**
 
-This is an example of using Presto JDBC driver:
+This is an example of using a custom JDBC driver:
+
 ```scala
+enablePlugins(SbtSQLJDBC)
+
 // Add your JDBC driver to the dependency
 // For using presto-jdbc
 libraryDependencies += "io.prestosql.presto" % "presto-jdbc" % "331"
@@ -63,13 +64,18 @@ jdbcPassword := "(jdbc password)"
 
 `sbt-sql-sqlite` plugin uses `src/main/sql/sqlite` as the SQL file directory. Configure `jdbcURL` and `jdbcUser` properties:
 ```scala
+enablePlugins(SbtSQLSQLite)
+
 jdbcURL := "jdbc:sqlite:(sqlite db file path)"
 ```
 
 ### sbt-sql-presto
 
 `sbt-sql-presto` plugin uses `src/main/sql/presto` as the SQL file directory. Configure `jdbcURL` and `jdbcUser` properties:
+
 ```scala
+enablePlugins(SbtSQLPresto)
+
 jdbcURL := "jdbc:presto://api-presto.treasuredata.com:443/td-presto"
 jdbcUser := "presto user name"
 ```
@@ -85,6 +91,10 @@ Alternatively you can set TD_API_KEY in your sbt credential:
 ```
 credentials += 
   Credentials("Treasure Data", "api-presto.treasuredata.com", "(your TD API KEY)", "")
+```
+
+```scala
+enablePlugins(SbtSQLTreasureData)
 ```
 
 ## Writing SQL
