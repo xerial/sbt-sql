@@ -123,7 +123,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
 
   def schemaToParamDef(schema:Schema) = {
     schema.columns.map {c =>
-      s"${c.qname}:${c.reader.name}"
+      s"${c.qname}: ${c.reader.name}"
     }
   }
 
