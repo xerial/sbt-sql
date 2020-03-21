@@ -1,1 +1,5 @@
-addSbtPlugin("org.xerial.sbt" % "sbt-sql-sqlite" % "0.10-SNAPSHOT")
+sys.props.get("plugin.version") match {
+  case Some(x) => addSbtPlugin("org.xerial.sbt" % "sbt-sql-sqlite" % x)
+  case _       => sys.error("""|The system property 'plugin.version' is not defined.
+                               |Specify this property using the scriptedLaunchOpts -D.""".stripMargin)
+}

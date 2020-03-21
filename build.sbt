@@ -1,8 +1,10 @@
 import ReleaseTransformations._
 
-val PRESTO_VERSION = "326"
-val SCALA_2_12 = "2.12.10"
-scalaVersion in Global := SCALA_2_12
+val PRESTO_VERSION = "331"
+val SCALA_2_12 = "2.12.11"
+scalaVersion in ThisBuild := SCALA_2_12
+
+Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val buildSettings = Seq(
   organization := "org.xerial.sbt",
@@ -52,6 +54,11 @@ val buildSettings = Seq(
 //    val sv = appConfiguration.value.provider.id.version
 //    ("org.scala-sbt" % "compiler-interface" % sv % "component").sources
 //  }
+  scriptedLaunchOpts := {
+    scriptedLaunchOpts.value ++
+            Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
+  },
+  crossSbtVersions := Vector("1.3.8")
 )
 
 commands += Command.command("bumpPluginVersion") {state =>
@@ -91,12 +98,10 @@ lazy val root: Project =
       runTest,
       releaseStepCommandAndRemaining("^ scripted"),
       setReleaseVersion,
-      releaseStepCommand("bumpPluginVersion"),
       commitReleaseVersion,
       tagRelease,
       releaseStepCommandAndRemaining("^ publishSigned"),
       setNextVersion,
-      releaseStepCommand("bumpPluginVersion"),
       commitNextVersion,
       releaseStepCommand("sonatypeReleaseAll"),
       pushChanges
