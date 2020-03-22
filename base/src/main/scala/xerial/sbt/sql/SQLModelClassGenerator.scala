@@ -48,6 +48,8 @@ object SQLModelClassGenerator
 class SQLModelClassGenerator(jdbcConfig: JDBCConfig)
         extends LogSupport
 {
+  wvlet.log.Logger.init
+
   private val db = new JDBCClient(jdbcConfig)
 
   private def wrapWithLimit0(sql: String) =
