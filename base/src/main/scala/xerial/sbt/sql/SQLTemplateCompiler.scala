@@ -1,13 +1,16 @@
 package xerial.sbt.sql
 
+import wvlet.log.LogSupport
 import xerial.lens.TypeUtil
 
 import scala.util.{Failure, Success, Try}
 
 /**
-  *
-  */
-object SQLTemplateCompiler extends xerial.core.log.Logger {
+ *
+ */
+object SQLTemplateCompiler
+        extends LogSupport
+{
 
   private def defaultValueFor(typeName: String): Any = typeName match {
     case "SQL" | "sql" => ""
@@ -135,7 +138,4 @@ object SQLTemplateCompiler extends xerial.core.log.Logger {
       imports = parsed.imports
     )
   }
-
-
-
 }

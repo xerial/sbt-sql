@@ -2,7 +2,7 @@ package xerial.sbt.sql
 
 import java.sql.{Connection, DriverManager, ResultSet}
 
-import xerial.core.log.Logger
+import wvlet.log.LogSupport
 
 private[sql] case class JDBCConfig(
   driver: String,
@@ -12,10 +12,13 @@ private[sql] case class JDBCConfig(
 )
 
 /**
-  *
-  */
-class JDBCClient(config:JDBCConfig, l:LogSupport) {
-  private def withResource[R <: AutoCloseable, U](r: R)(body: R => U): U = {
+ *
+ */
+class JDBCClient(config: JDBCConfig)
+        extends LogSupport
+{
+  private def withResource[R <: AutoCloseable, U](r: R)(body: R => U): U =
+  {
     try {
       body(r)
     }
@@ -24,7 +27,8 @@ class JDBCClient(config:JDBCConfig, l:LogSupport) {
     }
   }
 
-  def withConnection[U](body: Connection => U) : U = {
+  def withConnection[U](body: Connection => U): U =
+  {
     Class.forName(config.driver)
     withResource(DriverManager.getConnection(config.url, config.user, config.password)) {conn =>
       body(conn)
@@ -33,8 +37,8 @@ class JDBCClient(config:JDBCConfig, l:LogSupport) {
 
   def submitQuery[U](conn:Connection, sql: String)(body: ResultSet => U): U = {
     withResource(conn.createStatement()) {stmt =>
-      l.info(s"Executing SQL:\n${sql}")
-      withResource(stmt.executeQuery(sql)) {rs =>
+      info(s"Executing SQL:\n${sql}")
+      withResource(stmt.executeQuery(sql)) { rs =>
         body(rs)
       }
     }

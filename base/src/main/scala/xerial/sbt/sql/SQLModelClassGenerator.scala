@@ -4,14 +4,20 @@ import java.sql.JDBCType
 import java.util.Properties
 
 import sbt.{File, IO, _}
+import wvlet.log.LogSupport
+import xerial.sbt.sql.DataType.StringType
 
 import scala.util.{Failure, Success, Try}
 
 case class Schema(columns: Seq[Column])
-case class Column(qname: String, reader:ColumnAccess, sqlType: java.sql.JDBCType, isNullable: Boolean, elementType: java.sql.JDBCType = JDBCType.NULL)
-case class GeneratorConfig(sqlDir:File, targetDir:File)
 
-object SQLModelClassGenerator extends xerial.core.log.Logger {
+case class Column(qname: String, reader: DataType, sqlType: java.sql.JDBCType, isNullable: Boolean, elementType: java.sql.JDBCType = JDBCType.NULL)
+
+case class GeneratorConfig(sqlDir: File, targetDir: File)
+
+object SQLModelClassGenerator
+        extends LogSupport
+{
 
   private lazy val buildProps = {
     val p = new Properties()
@@ -39,20 +45,22 @@ object SQLModelClassGenerator extends xerial.core.log.Logger {
   }
 }
 
-class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
-  private val db = new JDBCClient(jdbcConfig, log)
+class SQLModelClassGenerator(jdbcConfig: JDBCConfig)
+        extends LogSupport
+{
+  private val db = new JDBCClient(jdbcConfig)
 
-  protected val typeMapping = SQLTypeMapping.default
-
-  private def wrapWithLimit0(sql: String) = {
+  private def wrapWithLimit0(sql: String) =
+  {
     s"""-- sbt-sql version:${SQLModelClassGenerator.getVersion}
        |SELECT * FROM (
        |${sql.trim}
        |) LIMIT 0""".stripMargin
   }
 
-  def checkResultSchema(sql: String): Schema = {
-    db.withConnection {conn =>
+  def checkResultSchema(sql: String): Schema =
+  {
+    db.withConnection { conn =>
       db.submitQuery(conn, sql) {rs =>
         val m = rs.getMetaData
         val cols = m.getColumnCount
@@ -62,12 +70,12 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
             case "type" => "`type`"
             case _ => name
           }
-          val tpe = m.getColumnType(i)
-          val jdbcType = JDBCType.valueOf(tpe)
+          val tpe = JDBCType.valueOf(m.getColumnType(i))
+          val typeName = m.getColumnTypeName(i)
+          val dataType = JDBCTypeNameParser.parseDataType(typeName).getOrElse(StringType)
 
-          val reader = typeMapping(jdbcType)
           val nullable = m.isNullable(i) != 0
-          Column(qname, reader, jdbcType, nullable)
+          Column(qname, dataType, tpe, nullable)
         }
         Schema(colTypes.toIndexedSeq)
       }
@@ -78,7 +86,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
     // Submit queries using multi-threads to minimize the waiting time
     val result = Seq.newBuilder[File]
     val buildTime = SQLModelClassGenerator.getBuildTime
-    log.debug(s"SQLModelClassGenerator version:${SQLModelClassGenerator.getVersion}")
+    debug(s"SQLModelClassGenerator version:${SQLModelClassGenerator.getVersion}")
 
     val baseDir = file(".")
 
@@ -87,28 +95,28 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig, log:LogSupport) {
       val targetClassFile = config.targetDir / path.replaceAll("\\.sql$", ".scala")
 
       val sqlFilePath = sqlFile.relativeTo(baseDir).getOrElse(sqlFile)
-      log.debug(s"Processing ${sqlFilePath}")
+      debug(s"Processing ${sqlFilePath}")
       val latestTimestamp = Math.max(sqlFile.lastModified(), buildTime)
       if(targetClassFile.exists()
         && targetClassFile.exists()
         && latestTimestamp <= targetClassFile.lastModified()) {
-        log.debug(s"${targetClassFile.relativeTo(config.targetDir).getOrElse(targetClassFile)} is up-to-date")
+        debug(s"${targetClassFile.relativeTo(config.targetDir).getOrElse(targetClassFile)} is up-to-date")
       }
       else {
         val sql = IO.read(sqlFile)
         Try(SQLTemplate(sql)) match {
           case Success(template) =>
             val limit0 = wrapWithLimit0(template.populated)
-            log.info(s"Checking the SQL result schema of ${sqlFilePath}")
+            info(s"Checking the SQL result schema of ${sqlFilePath}")
             val schema = checkResultSchema(limit0)
 
             // Write SQL template without type annotation
             val scalaCode = schemaToClass(sqlFile, config.sqlDir, schema, template)
-            log.info(s"Generating model class: ${targetClassFile}")
+            info(s"Generating model class: ${targetClassFile}")
             IO.write(targetClassFile, scalaCode)
             targetClassFile.setLastModified(latestTimestamp)
           case Failure(e) =>
-            log.error(s"Failed to parse ${sqlFile}: ${e.getMessage}")
+            error(s"Failed to parse ${sqlFile}: ${e.getMessage}")
             throw e
         }
       }
