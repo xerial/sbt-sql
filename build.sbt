@@ -1,6 +1,8 @@
 import ReleaseTransformations._
 
 val PRESTO_VERSION = "331"
+val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
+
 val SCALA_2_12 = "2.12.11"
 scalaVersion in ThisBuild := SCALA_2_12
 
@@ -112,6 +114,10 @@ lazy val base: Project =
   Project(id = "sbt-sql-base", base = file("base"))
   .settings(
     buildSettings,
+    libraryDependencies ++= Seq(
+      "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
+      "org.wvlet.airframe" %% "airframe-surface" % "20.3.1"
+    ),
     resourceGenerators in Compile += Def.task {
       val buildProp = (resourceManaged in Compile).value / "org" / "xerial" / "sbt" / "sbt-sql" / "build.properties"
       val buildRev = scala.sys.process.Process("git" :: "rev-parse" :: "HEAD" :: Nil).!!.trim
@@ -126,9 +132,7 @@ lazy val generic: Project =
   Project(id = "sbt-sql", base = file("generic"))
   .settings(
     buildSettings,
-    description := " A sbt plugin for generating model classes from SQL files",
-    libraryDependencies ++= Seq(
-    )
+    description := " A sbt plugin for generating model classes from SQL files"
   ).dependsOn(base)
 
 lazy val sqlite: Project =

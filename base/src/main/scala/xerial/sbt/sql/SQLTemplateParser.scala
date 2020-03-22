@@ -1,6 +1,6 @@
 package xerial.sbt.sql
 
-import xerial.core.log.Logger
+import wvlet.log.LogSupport
 
 import scala.io.Source
 import scala.util.matching.Regex.Match
@@ -8,9 +8,14 @@ import scala.util.parsing.combinator._
 
 sealed trait Preamble
 
-object Preamble {
-  case class Function(args:Seq[FunctionArg]) extends Preamble
-  case class FunctionArg(name:String, typeName:String, defaultValue:Option[String]) {
+object Preamble
+{
+
+  case class Function(args: Seq[FunctionArg])
+          extends Preamble
+
+  case class FunctionArg(name: String, typeName: String, defaultValue: Option[String])
+  {
     override def toString = s"${name}:${typeName}${defaultValue.map(x => s"=${x}").getOrElse("")}"
 
     def isSameType(a:FunctionArg) = name == a.name && typeName == a.typeName
@@ -32,17 +37,23 @@ object Preamble {
 }
 
 import Preamble._
+
 /**
-  *
-  */
-object SQLTemplateParser extends Logger {
+ *
+ */
+object SQLTemplateParser
+        extends LogSupport
+{
 
-  case class Pos(line:Int, pos:Int)
-  case class ParseError(message:String, pos:Option[Pos]) extends Exception(message)
+  case class Pos(line: Int, pos: Int)
 
-  case class ParseResult(sql:String, args:Seq[FunctionArg], imports:Seq[Import])
+  case class ParseError(message: String, pos: Option[Pos])
+          extends Exception(message)
 
-  def parse(template:String): ParseResult = {
+  case class ParseResult(sql: String, args: Seq[FunctionArg], imports: Seq[Import])
+
+  def parse(template: String): ParseResult =
+  {
     val preamble = Seq.newBuilder[Preamble]
     val remaining = Seq.newBuilder[String]
 

@@ -28,7 +28,7 @@ object SQL {
     sqlDir := (sourceDirectory in Compile).value / "sql",
     generateSQLModel := {
       val config = JDBCConfig(jdbcDriver.value, jdbcURL.value, jdbcUser.value, jdbcPassword.value)
-      val generator = new SQLModelClassGenerator(config, new SbtLogSupport(state.value.log)) //, state.value.log)
+      val generator = new SQLModelClassGenerator(config)
       generator.generate(
         GeneratorConfig(sqlDir.value,
           (managedSourceDirectories in Compile).value.head
