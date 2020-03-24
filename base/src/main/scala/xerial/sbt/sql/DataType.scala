@@ -40,10 +40,10 @@ object DataType
           extends DataType(name = "")
 
   case class ArrayType(elementType: DataType)
-          extends DataType(s"Array[${elementType}}]", Seq(elementType))
+          extends DataType(s"Array[${elementType.name}]", Seq(elementType))
 
   case class MapType(keyType: DataType, valueType: DataType)
-          extends DataType(s"Map[${keyType}, ${valueType}]",
+          extends DataType(s"Map[${keyType.name}, ${valueType.name}]",
             Seq(keyType, valueType))
 
   case object AnyType
