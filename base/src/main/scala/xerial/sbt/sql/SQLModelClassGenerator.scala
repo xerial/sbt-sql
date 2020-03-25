@@ -175,7 +175,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig)
          |
          |${additionalImports}
          |
-         |object ${name} {
+         |object ${name} extends wvlet.log.LogSupport {
          |  def path : String = "/${packageName.replaceAll("\\.", "/")}/${name}.sql"
          |
          |  private lazy val codec = MessageCodec.of[${name}]
@@ -190,12 +190,13 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig)
          |
          |  def selectWith(sql:String)(implicit conn:java.sql.Connection) : Seq[${name}] = {
          |    withResource(conn.createStatement()) { stmt =>
+         |      debug(s"Executing query:\\n$${sql}")
          |      withResource(stmt.executeQuery(sql)) { rs =>
          |        val jdbcCodec = JDBCCodec(rs)
          |        val result = jdbcCodec.mapMsgPackArrayRows{ msgpack =>
          |          codec.fromMsgPack(msgpack)
          |        }
-         |        result.toSeq
+         |        result.toIndexedSeq
          |      }
          |    }
          |  }
