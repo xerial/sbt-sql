@@ -16,8 +16,7 @@ class SQLModelClassGeneratorTest extends Spec {
           url = "jdbc:presto://api-presto.treasuredata.com:443/td-presto?SSL=true",
           user = sys.env("TD_API_KEY"),
           password = "dummy"
-        ),
-        new DebugLogSupport(LoggerFactory(classOf[SQLModelClassGenerator]))
+        )
       )
       g.generate(GeneratorConfig(
         new File("base/src/test/sql/presto"),
