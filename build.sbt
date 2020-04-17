@@ -12,21 +12,16 @@ val buildSettings = Seq(
   organization := "org.xerial.sbt",
   sonatypeProfileName := "org.xerial",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
-  pomExtra in ThisBuild := {
-    <url>http://xerial.org/</url>
-    <scm>
-      <connection>scm:git:github.com/xerial/sbt-sql.git</connection>
-      <developerConnection>scm:git:git@github.com:xerial/sbt-sql.git</developerConnection>
-      <url>https://github.com/xerial/sbt-sql</url>
-    </scm>
-    <developers>
-      <developer>
-        <id>leo</id>
-        <name>Taro L. Saito</name>
-        <url>http://xerial.org/leo</url>
-      </developer>
-    </developers>
-  },
+  homepage := Some(url("https://github.com/xerial/sbt-sql")),
+  scmInfo := Some(
+    ScmInfo(
+      browseUrl = url("https://github.com/xerial/sbt-sql"),
+      connection = "scm:git@github.com:xerial/sbt-sql.git"
+    )
+  ),
+  developers := List(
+    Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
+  ),
   publishTo := Some(
     if (isSnapshot.value)
       Opts.resolver.sonatypeSnapshots

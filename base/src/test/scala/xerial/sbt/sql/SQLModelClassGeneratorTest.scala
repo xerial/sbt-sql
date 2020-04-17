@@ -2,8 +2,6 @@ package xerial.sbt.sql
 
 import java.io.File
 
-import xerial.core.log.LoggerFactory
-
 /**
   *
   */
