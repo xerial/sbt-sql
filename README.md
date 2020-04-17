@@ -48,7 +48,10 @@ enablePlugins(SbtSQLJDBC)
 
 // Add your JDBC driver to the dependency
 // For using presto-jdbc
-libraryDependencies += "io.prestosql.presto" % "presto-jdbc" % "331"
+libraryDependencies ++= Seq(
+  "org.wvlet.airframe" % "airframe-codec" % "20.4.1", // Necessary for mapping JDBC ResultSets to model classes
+  "io.prestosql.presto" % "presto-jdbc" % "332"
+ )
 
 // You can change SQL file folder. The default is src/main/sql
 // sqlDir := (sourceDirectory in Compile).value / "sql"
@@ -89,7 +92,7 @@ Alternatively you can set TD_API_KEY in your sbt credential:
 
 **$HOME/.sbt/1.0/td.sbt**
 ```
-credentials += 
+credentials +=
   Credentials("Treasure Data", "api-presto.treasuredata.com", "(your TD API KEY)", "")
 ```
 
@@ -145,8 +148,12 @@ object nasdaq {
 
   def sql(start:Long, end:Long) : String = {
     s""""select * from sample_dataest.nasdaq
-where time between ${start} and ${end}    
+where time between ${start} and ${end}
     """
+  }
+
+  def select(start:Long, end:Long)(implicit conn:java.sql.Connection): Seq[nasdaq] = ...
+  def selectWith(sql:String)(implicit conn:java.sql.Connection): Seq[nasdaq] = ...
 }
 
 case class nasdaq(
