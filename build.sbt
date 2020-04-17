@@ -1,6 +1,6 @@
 import ReleaseTransformations._
 
-val PRESTO_VERSION = "331"
+val PRESTO_VERSION = "332"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 
 val SCALA_2_12 = "2.12.11"
