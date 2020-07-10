@@ -3,7 +3,6 @@ package xerial.sbt.sql
 import xerial.sbt.sql.Preamble.FunctionArg
 
 /**
-  *
   */
 class SQLTemplateParserTest extends Spec {
 

@@ -8,73 +8,67 @@ import scala.util.parsing.combinator._
 
 sealed trait Preamble
 
-object Preamble
-{
+object Preamble {
 
-  case class Function(args: Seq[FunctionArg])
-          extends Preamble
+  case class Function(args: Seq[FunctionArg]) extends Preamble
 
-  case class FunctionArg(name: String, typeName: String, defaultValue: Option[String])
-  {
+  case class FunctionArg(name: String, typeName: String, defaultValue: Option[String]) {
     override def toString = s"${name}:${typeName}${defaultValue.map(x => s"=${x}").getOrElse("")}"
 
-    def isSameType(a:FunctionArg) = name == a.name && typeName == a.typeName
+    def isSameType(a: FunctionArg) = name == a.name && typeName == a.typeName
 
     def quotedValue: String = {
       typeName match {
         case "String" | "SQL" | "sql" => "\"" + defaultValue.get + "\""
-        case other => defaultValue.get
+        case other                    => defaultValue.get
       }
     }
     def functionArgType: String = {
       typeName match {
         case "SQL" | "sql" => "String"
-        case other => other
+        case other         => other
       }
     }
   }
-  case class Import(target:String) extends Preamble
+  case class Import(target: String) extends Preamble
+
+  case class Optional(columns: List[String]) extends Preamble
 }
 
 import Preamble._
 
 /**
- *
- */
-object SQLTemplateParser
-        extends LogSupport
-{
+  */
+object SQLTemplateParser extends LogSupport {
 
   case class Pos(line: Int, pos: Int)
 
-  case class ParseError(message: String, pos: Option[Pos])
-          extends Exception(message)
+  case class ParseError(message: String, pos: Option[Pos]) extends Exception(message)
 
-  case class ParseResult(sql: String, args: Seq[FunctionArg], imports: Seq[Import])
+  case class ParseResult(sql: String, args: Seq[FunctionArg], imports: Seq[Import], optionals: Seq[Optional])
 
-  def parse(template: String): ParseResult =
-  {
-    val preamble = Seq.newBuilder[Preamble]
+  def parse(template: String): ParseResult = {
+    val preamble  = Seq.newBuilder[Preamble]
     val remaining = Seq.newBuilder[String]
 
     for ((line, lineNum) <- Source.fromString(template).getLines().zipWithIndex) {
-      if(line.startsWith("@")) {
+      if (line.startsWith("@")) {
         PreambleParser.parse(PreambleParser.preamble, line) match {
           case PreambleParser.Success(matched, _) => preamble += matched
           case other =>
-            throw ParseError(other.toString, Some(Pos(lineNum+1, 0)))
+            throw ParseError(other.toString, Some(Pos(lineNum + 1, 0)))
         }
-      }
-      else {
+      } else {
         remaining += line
       }
     }
 
-    val sql = remaining.result().mkString("\n")
-    val p = preamble.result()
-    val imports = p.collect{case i:Import => i}
+    val sql       = remaining.result().mkString("\n")
+    val p         = preamble.result()
+    val imports   = p.collect { case i: Import => i }
+    val optionals = p.collect { case o: Optional => o }
     val f = {
-      val defs = p.collect {case f: Function => f}
+      val defs = p.collect { case f: Function => f }
       if (defs.size > 1) {
         warn(s"Multiple function definitions are found:\n${defs.mkString("\n")}")
       }
@@ -82,7 +76,7 @@ object SQLTemplateParser
     }
 
     val parametersInsideSQLBody = extractParam(sql)
-    if(f.nonEmpty) {
+    if (f.nonEmpty) {
       for (x <- parametersInsideSQLBody) {
         if (!f.get.args.exists(_.name == x.name)) {
           throw ParseError(s"${x} is not found in the function definition", None)
@@ -92,71 +86,81 @@ object SQLTemplateParser
 
     // Allow SQL template without any function header for backward compatibility
     // Escape backslash
-    val sanitized = removeParamType(sql).replaceAll("\\\\","\\\\\\\\")
-    ParseResult(sanitized, f.map(_.args).getOrElse(parametersInsideSQLBody), imports)
+    val sanitized = removeParamType(sql).replaceAll("\\\\", "\\\\\\\\")
+    ParseResult(sanitized, f.map(_.args).getOrElse(parametersInsideSQLBody), imports, optionals)
   }
 
-  def parseFunction(f:String) : Function = {
+  def parseFunction(f: String): Function = {
     PreambleParser.parse(PreambleParser.function, f) match {
       case PreambleParser.Success(matched, _) => matched
-      case other => throw new IllegalArgumentException(other.toString)
+      case other                              => throw new IllegalArgumentException(other.toString)
     }
   }
-
 
   object PreambleParser extends JavaTokenParsers {
     override def skipWhitespace = true
 
-    def str: Parser[String] = stringLiteral ^^ { x => x.substring(1,x.length-1) }
-    def value: Parser[String] = ident | str | decimalNumber | wholeNumber | floatingPointNumber
-    def defaultValue : Parser[String] = "=" ~ value ^^ { case _ ~ v => v }
-    def arg : Parser[FunctionArg] = ident ~ ":" ~ typeName ~ opt(defaultValue) ^^ { case n ~ _ ~ t ~ opt => FunctionArg(n, t, opt) }
-    def args : Parser[Seq[FunctionArg]] = arg ~ rep(',' ~ arg) ^^ { case first ~ rest => Seq(first) ++ rest.map(_._2).toSeq }
+    def str: Parser[String]          = stringLiteral ^^ { x => x.substring(1, x.length - 1) }
+    def value: Parser[String]        = ident | str | decimalNumber | wholeNumber | floatingPointNumber
+    def defaultValue: Parser[String] = "=" ~ value ^^ { case _ ~ v => v }
+    def arg: Parser[FunctionArg] =
+      ident ~ ":" ~ typeName ~ opt(defaultValue) ^^ { case n ~ _ ~ t ~ opt => FunctionArg(n, t, opt) }
+    def args: Parser[Seq[FunctionArg]] =
+      arg ~ rep(',' ~ arg) ^^ { case first ~ rest => Seq(first) ++ rest.map(_._2).toSeq }
 
-    def typeName: Parser[String] = ident | tupleType | genericType
-    def genericType : Parser[String] = ident ~ "[" ~ typeName ~ rep("," ~ typeName) ~ "]" ^^ { _._2 }
-    def tupleType: Parser[String] = "(" ~ typeName ~ rep("," ~ typeName) ~ ")" ^^ {
-      case _ ~ first ~ rest ~ _ => s"(${(Seq(first) ++ rest.map(_._2).toSeq).mkString(",")})"
-    }
+    def typeName: Parser[String]    = ident | tupleType | genericType
+    def genericType: Parser[String] = ident ~ "[" ~ typeName ~ rep("," ~ typeName) ~ "]" ^^ { _._2 }
+    def tupleType: Parser[String] =
+      "(" ~ typeName ~ rep("," ~ typeName) ~ ")" ^^ {
+        case _ ~ first ~ rest ~ _ => s"(${(Seq(first) ++ rest.map(_._2).toSeq).mkString(",")})"
+      }
 
     def function: Parser[Function] = "@(" ~ args ~ ")" ^^ { case _ ~ args ~ _ => Function(args) }
+
     def importStmt: Parser[Import] = "@import" ~ classRef ^^ { case _ ~ i => Import(i.toString) }
-    def classRef: Parser[String] = ident ~ rep('.' ~ ident) ^^ {
-      case h ~ t => (h :: t.map(_._2)).mkString(".")
-    }
-    def preamble : Parser[Preamble] = function | importStmt
+
+    def optional: Parser[Optional] = "@optional(" ~ repsep(ident, ',') ~ ")" ^^ { case _ ~ cols ~ _ => Optional(cols) }
+
+    def classRef: Parser[String] =
+      ident ~ rep('.' ~ ident) ^^ {
+        case h ~ t => (h :: t.map(_._2)).mkString(".")
+      }
+
+    def preamble: Parser[Preamble] = function | importStmt | optional
   }
 
   val embeddedParamPattern = """\$\{\s*(\w+)\s*(:\s*(\w+))?\s*(=\s*([^\}]+)\s*)?\}""".r
-  val embeddedExprPattern = """\$\{([^\}]*)\}"""
+  val embeddedExprPattern  = """\$\{([^\}]*)\}"""
 
-  def extractParam(sql:String) : Seq[FunctionArg] = {
+  def extractParam(sql: String): Seq[FunctionArg] = {
     // TODO remove comment lines
     val params = Seq.newBuilder[FunctionArg]
     for ((line, lineNum) <- Source.fromString(sql).getLines().zipWithIndex) {
       for (m <- embeddedParamPattern.findAllMatchIn(line)) {
-        val name = m.group(1)
-        val typeName = Option(m.group(3))
+        val name         = m.group(1)
+        val typeName     = Option(m.group(3))
         val defaultValue = Option(m.group(5))
         params += FunctionArg(name, typeName.getOrElse("String"), defaultValue) // , lineNum+1, m.start, m.end)
       }
     }
     // Dedup by preserving orders
-    val lst = params.result
+    val lst  = params.result
     var seen = Set.empty[String]
-    val result = for(p <- params.result if !seen.contains(p.name)) yield {
+    val result = for (p <- params.result if !seen.contains(p.name)) yield {
       seen += p.name
       p
     }
     result.toSeq
   }
 
-  def removeParamType(sql:String) : String = {
-    embeddedParamPattern.replaceAllIn(sql, { m: Match =>
-      val name = m.group(1)
-      "\\${" + name + "}"
-    })
+  def removeParamType(sql: String): String = {
+    embeddedParamPattern.replaceAllIn(
+      sql,
+      { m: Match =>
+        val name = m.group(1)
+        "\\${" + name + "}"
+      }
+    )
   }
 
 }
-

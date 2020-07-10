@@ -5,14 +5,10 @@ import sbt.Keys.sourceDirectory
 import sbt.plugins.JvmPlugin
 
 /**
- *
- */
-object SbtSQLSQLite
-        extends AutoPlugin
-{
+  */
+object SbtSQLSQLite extends AutoPlugin {
 
-  object autoImport
-          extends SQL.Keys
+  object autoImport extends SQL.Keys
 
   import autoImport._
 
@@ -25,6 +21,6 @@ object SbtSQLSQLite
 
   override def trigger = noTrigger
 
-  override def requires = JvmPlugin
+  override def requires        = JvmPlugin
   override def projectSettings = sqliteSettings
 }
