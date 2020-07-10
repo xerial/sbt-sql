@@ -11,3 +11,6 @@ object SQLTemplate extends Logger {
 }
 
 case class SQLTemplate(sql: String, populated: String, params: Seq[Preamble.FunctionArg], imports: Seq[Preamble.Import], optionals: Seq[Preamble.Optional])
+{
+  def optionalParams: Set[String] = optionals.map(_.columns).flatten.toSet[String]
+}

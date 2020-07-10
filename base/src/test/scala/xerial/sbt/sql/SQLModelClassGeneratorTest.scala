@@ -39,14 +39,17 @@ class SQLModelClassGeneratorTest
         JDBCResultColumn("id", "varchar", Types.VARCHAR, true),
         JDBCResultColumn("param__optional", "bigint", Types.BIGINT, true),
         JDBCResultColumn("type", "varchar", Types.VARCHAR, true),
+        JDBCResultColumn("end_at", "bigint", Types.BIGINT, true),
       )
-      val schema = SQLModelClassGenerator.generateSchema(columns)
+      val schema = SQLModelClassGenerator.generateSchema(columns, Set("end_at"))
       schema shouldBe Schema(
         IndexedSeq(
           Column("id", DataType.StringType, JDBCType.VARCHAR, true),
           Column("param", OptionType(DataType.LongType), JDBCType.BIGINT, true),
           // quote Scala reserved words
           Column("`type`", DataType.StringType, JDBCType.VARCHAR, true),
+          // Optional type specified by preamble
+          Column("end_at", OptionType(DataType.LongType), JDBCType.BIGINT, true),
         )
       )
     }
