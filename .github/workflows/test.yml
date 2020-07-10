@@ -23,7 +23,7 @@ jobs:
       - name: scalafmt test
         run: ./sbt scalafmtCheckAll
   unit_test:
-    name: sbt scripted test
+    name: unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -38,7 +38,7 @@ jobs:
       - name: Unit tests
         run: ./sbt test
   test_sbt_plugin:
-    name: sbt scripted test
+    name: sbt scripted tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
