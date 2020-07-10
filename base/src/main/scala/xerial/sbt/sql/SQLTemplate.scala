@@ -10,4 +10,4 @@ object SQLTemplate extends Logger {
   def apply(sql: String): SQLTemplate = SQLTemplateCompiler.compile(sql)
 }
 
-case class SQLTemplate(sql: String, populated: String, params: Seq[Preamble.FunctionArg], imports: Seq[Preamble.Import])
+case class SQLTemplate(sql: String, populated: String, params: Seq[Preamble.FunctionArg], imports: Seq[Preamble.Import], optionals: Seq[Preamble.Optional])

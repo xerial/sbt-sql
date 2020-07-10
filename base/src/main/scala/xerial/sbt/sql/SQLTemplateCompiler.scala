@@ -135,7 +135,8 @@ object SQLTemplateCompiler
       sql = parsed.sql,
       populated = populatedSQL,
       params = params,
-      imports = parsed.imports
+      imports = parsed.imports,
+      optionals = parsed.optionals
     )
   }
 }

@@ -33,7 +33,11 @@ object Preamble
       }
     }
   }
-  case class Import(target:String) extends Preamble
+  case class Import(target: String)
+          extends Preamble
+
+  case class Optional(columns: List[String])
+          extends Preamble
 }
 
 import Preamble._
@@ -50,7 +54,7 @@ object SQLTemplateParser
   case class ParseError(message: String, pos: Option[Pos])
           extends Exception(message)
 
-  case class ParseResult(sql: String, args: Seq[FunctionArg], imports: Seq[Import])
+  case class ParseResult(sql: String, args: Seq[FunctionArg], imports: Seq[Import], optionals: Seq[Optional])
 
   def parse(template: String): ParseResult =
   {
@@ -72,9 +76,10 @@ object SQLTemplateParser
 
     val sql = remaining.result().mkString("\n")
     val p = preamble.result()
-    val imports = p.collect{case i:Import => i}
+    val imports = p.collect { case i: Import => i }
+    val optionals = p.collect { case o: Optional => o }
     val f = {
-      val defs = p.collect {case f: Function => f}
+      val defs = p.collect { case f: Function => f }
       if (defs.size > 1) {
         warn(s"Multiple function definitions are found:\n${defs.mkString("\n")}")
       }
@@ -93,7 +98,7 @@ object SQLTemplateParser
     // Allow SQL template without any function header for backward compatibility
     // Escape backslash
     val sanitized = removeParamType(sql).replaceAll("\\\\","\\\\\\\\")
-    ParseResult(sanitized, f.map(_.args).getOrElse(parametersInsideSQLBody), imports)
+    ParseResult(sanitized, f.map(_.args).getOrElse(parametersInsideSQLBody), imports, optionals)
   }
 
   def parseFunction(f:String) : Function = {
@@ -120,11 +125,16 @@ object SQLTemplateParser
     }
 
     def function: Parser[Function] = "@(" ~ args ~ ")" ^^ { case _ ~ args ~ _ => Function(args) }
+
     def importStmt: Parser[Import] = "@import" ~ classRef ^^ { case _ ~ i => Import(i.toString) }
+
+    def optional: Parser[Optional] = "@optional(" ~ repsep(ident, ',') ~ ")" ^^ { case _ ~ cols ~ _ => Optional(cols) }
+
     def classRef: Parser[String] = ident ~ rep('.' ~ ident) ^^ {
       case h ~ t => (h :: t.map(_._2)).mkString(".")
     }
-    def preamble : Parser[Preamble] = function | importStmt
+
+    def preamble: Parser[Preamble] = function | importStmt | optional
   }
 
   val embeddedParamPattern = """\$\{\s*(\w+)\s*(:\s*(\w+))?\s*(=\s*([^\}]+)\s*)?\}""".r

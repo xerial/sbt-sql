@@ -8,6 +8,7 @@ import wvlet.log.LogSupport
 import xerial.sbt.sql.DataType.StringType
 
 import scala.util.{Failure, Success, Try}
+import java.sql.ResultSetMetaData
 
 case class Schema(columns: Seq[Column])
 
@@ -92,7 +93,12 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig)
       db.submitQuery(conn, sql) { rs =>
         val m = rs.getMetaData
         val cols = (1 to m.getColumnCount).map { i =>
-          JDBCResultColumn(m.getColumnName(i), m.getColumnTypeName(i), m.getColumnType(i), m.isNullable(i) != 0)
+          JDBCResultColumn(
+            m.getColumnName(i),
+            m.getColumnTypeName(i),
+            m.getColumnType(i),
+            m.isNullable(i) == ResultSetMetaData.columnNullable
+          )
         }
         generateSchema(cols)
       }
@@ -146,10 +152,15 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig)
     result.result()
   }
 
-
-  def schemaToParamDef(schema:Schema) = {
-    schema.columns.map {c =>
-      s"${c.qname}: ${c.reader.name}"
+  def schemaToParamDef(schema: Schema, optionals: Seq[Preamble.Optional]) =
+  {
+    schema.columns.map { c =>
+      if (c.isNullable || optionals.exists(_.columns.contains(c.qname))) {
+        s"${c.qname}: Option[${c.reader.name}]"
+      }
+      else {
+        s"${c.qname}: ${c.reader.name}"
+      }
     }
   }
 
@@ -165,7 +176,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig)
     }.getOrElse("")
     val name = origFile.getName.replaceAll("\\.sql$", "")
 
-    val params = schemaToParamDef(schema)
+    val params = schemaToParamDef(schema, sqlTemplate.optionals)
 
 
     val sqlTemplateArgs = sqlTemplate.params.map {p =>
