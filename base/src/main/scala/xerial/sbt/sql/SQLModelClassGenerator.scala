@@ -100,7 +100,8 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig)
             m.isNullable(i) == ResultSetMetaData.columnNullable
           )
         }
-        generateSchema(cols)
+        // Ensure materializing cols before closing the connection
+        generateSchema(cols.toIndexedSeq)
       }
     }
   }
