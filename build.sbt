@@ -22,18 +22,13 @@ val buildSettings = Seq(
   developers := List(
     Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
   ),
-  publishTo := Some(
-    if (isSnapshot.value)
-      Opts.resolver.sonatypeSnapshots
-    else
-      Opts.resolver.sonatypeStaging
-  ),
+  publishTo := sonatypePublishToBundle.value,
   organizationName := "Xerial project",
   organizationHomepage := Some(new URL("http://xerial.org/")),
   description := "A sbt plugin for generating model classes from SQL files",
   publishMavenStyle := true,
   publishArtifact in Test := false,
-  pomIncludeRepository := {_ => false},
+  pomIncludeRepository := { _ => false },
   parallelExecution := true,
   scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
   libraryDependencies ++= Seq(
@@ -96,7 +91,7 @@ lazy val root: Project =
       releaseStepCommandAndRemaining("publishSigned"),
       setNextVersion,
       commitNextVersion,
-      releaseStepCommand("sonatypeReleaseAll"),
+      releaseStepCommand("sonatypeBundleRelease"),
       pushChanges
     )
   )
