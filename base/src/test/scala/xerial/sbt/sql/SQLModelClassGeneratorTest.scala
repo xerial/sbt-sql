@@ -11,6 +11,10 @@ import xerial.sbt.sql.SQLModelClassGenerator.JDBCResultColumn
 class SQLModelClassGeneratorTest extends Spec {
   "SQLModelClassGenerator" should {
     "generate case class code" in {
+      if (sys.env.get("TD_API_KEY").isEmpty) {
+        // Skip tests that requrie TD_API_KEY
+        pending
+      }
       val g = new SQLModelClassGenerator(
         JDBCConfig(
           driver = "io.prestosql.jdbc.PrestoDriver",
