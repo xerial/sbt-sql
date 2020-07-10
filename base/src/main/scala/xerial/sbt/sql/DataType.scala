@@ -37,7 +37,7 @@ object DataType
           extends DataType(name = "Array[Byte]")
 
   case class DecimalType(p: Int, s: Int)
-          extends DataType(name = "")
+          extends DataType(name = "Double") // Map decimal to Double
 
   case class ArrayType(elementType: DataType)
           extends DataType(s"Array[${elementType.name}]", Seq(elementType))
@@ -50,7 +50,7 @@ object DataType
           extends DataType("Any")
 
   case class OptionType(elementType: DataType)
-          extends DataType(name = s"Option[${elementType.name}", Seq(elementType))
+          extends DataType(name = s"Option[${elementType.name}]", Seq(elementType))
 
 }
 
