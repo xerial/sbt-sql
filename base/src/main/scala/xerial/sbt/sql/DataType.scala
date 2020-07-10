@@ -49,6 +49,9 @@ object DataType
   case object AnyType
           extends DataType("Any")
 
+  case class OptionType(elementType: DataType)
+          extends DataType(name = s"Option[${elementType.name}", Seq(elementType))
+
 }
 
 sealed abstract class DataType(val name: String,

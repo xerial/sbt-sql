@@ -137,6 +137,15 @@ You can use your own type for populating SQL templates by importing your class a
 @import your.own.class
 ```
 
+### Using Option[X] types
+
+To generate case classes with Option[X] parameters, add `__optional` suffix to the target column names.  
+
+```
+select a as a__optional // Option[X] will be used  
+from ...
+```
+
 
 ### Generated Files
 **target/src_managed/main/sample/nasdaq.scala**

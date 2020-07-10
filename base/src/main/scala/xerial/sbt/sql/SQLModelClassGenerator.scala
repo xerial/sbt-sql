@@ -36,18 +36,44 @@ object SQLModelClassGenerator
     p
   }
 
-
-  lazy val getBuildTime : Long = {
+  lazy val getBuildTime: Long = {
     buildProps.getProperty("build_time", System.currentTimeMillis().toString).toLong
   }
-  lazy val getVersion : String = {
+  lazy val getVersion: String = {
     buildProps.getProperty("version", "unknown")
+  }
+
+  case class JDBCResultColumn(name: String, typeName: String, typeId: Int, isNullable: Boolean)
+
+  private[sql] def generateSchema(columns: Seq[JDBCResultColumn]): Schema =
+  {
+    val colTypes = columns.map { c =>
+      val tpe = JDBCType.valueOf(c.typeId)
+      val typeName = c.typeName
+      val originalDataType = JDBCTypeNameParser.parseDataType(typeName).getOrElse(StringType)
+      val (colName, dataType) = if (c.name.endsWith("__optional")) {
+        (c.name.stripSuffix("__optional"), DataType.OptionType(originalDataType))
+      }
+      else {
+        (c.name, originalDataType)
+      }
+      val qname = colName match {
+        // Scala's reserved keywords
+        case "type" => "`type`"
+        case other => other
+      }
+      Column(qname, dataType, tpe, c.isNullable)
+    }
+    Schema(colTypes.toIndexedSeq)
   }
 }
 
 class SQLModelClassGenerator(jdbcConfig: JDBCConfig)
         extends LogSupport
 {
+
+  import SQLModelClassGenerator._
+
   wvlet.log.Logger.init
 
   private val db = new JDBCClient(jdbcConfig)
@@ -63,23 +89,12 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig)
   def checkResultSchema(sql: String): Schema =
   {
     db.withConnection { conn =>
-      db.submitQuery(conn, sql) {rs =>
+      db.submitQuery(conn, sql) { rs =>
         val m = rs.getMetaData
-        val cols = m.getColumnCount
-        val colTypes = (1 to cols).map {i =>
-          val name = m.getColumnName(i)
-          val qname = name match {
-            case "type" => "`type`"
-            case _ => name
-          }
-          val tpe = JDBCType.valueOf(m.getColumnType(i))
-          val typeName = m.getColumnTypeName(i)
-          val dataType = JDBCTypeNameParser.parseDataType(typeName).getOrElse(StringType)
-
-          val nullable = m.isNullable(i) != 0
-          Column(qname, dataType, tpe, nullable)
+        val cols = (1 to m.getColumnCount).map { i =>
+          JDBCResultColumn(m.getColumnName(i), m.getColumnTypeName(i), m.getColumnType(i), m.isNullable(i) != 0)
         }
-        Schema(colTypes.toIndexedSeq)
+        generateSchema(cols)
       }
     }
   }
