@@ -1,6 +1,15 @@
 Release Notes 
 ===
 
+
+## 0.12
+ - Support Option[X] types by using '__optional' column name suffix, or `@optional(col_name1, ...)` parameter. 
+
+## 0.11
+ - Drop support for sbt 0.13
+ - Generate Scala case classes
+ - Use airframe-codec and airframe-jdbc for mapping JDBC query results into Scala case classes
+
 ## 0.8
  - Upgrade to Presto 0.186
 
