@@ -146,6 +146,10 @@ select a as a__optional // Option[X] will be used
 from ...
 ```
 
+```scala
+@optional(a, b)
+select a, b, c // Option[A], Option[B], C 
+```
 
 ### Generated Files
 **target/src_managed/main/sample/nasdaq.scala**
