@@ -7,26 +7,26 @@ import wvlet.log.LogSupport
 import scala.util.parsing.combinator.RegexParsers
 
 /**
- * Parse JDBC Type Names (based on Presto's types)
- * This class defines mapping between Presto data type.
- *
- * Presto types: https://prestosql.io/docs/current/language/types.html
- */
-object JDBCTypeNameParser
-        extends RegexParsers with LogSupport
-{
+  * Parse JDBC Type Names (based on Presto's types)
+  * This class defines mapping between Presto data type.
+  *
+  * Presto types: https://prestosql.io/docs/current/language/types.html
+  */
+object JDBCTypeNameParser extends RegexParsers with LogSupport {
 
   import xerial.sbt.sql.DataType._
 
   private def typeName: Parser[String] = "[a-z][a-z ]*".r
 
-  private def number: Parser[Int] = "[0-9]*".r ^^ {
-    _.toInt
-  }
+  private def number: Parser[Int] =
+    "[0-9]*".r ^^ {
+      _.toInt
+    }
 
-  private def primitiveType: Parser[DataType] = typeName ^^ {
-    toScalaPrimitiveType(_)
-  }
+  private def primitiveType: Parser[DataType] =
+    typeName ^^ {
+      toScalaPrimitiveType(_)
+    }
 
   private def varcharType: Parser[DataType] =
     "varchar" ~ opt("(" ~ number ~ ")") ^^ {
@@ -39,9 +39,10 @@ object JDBCTypeNameParser
         DecimalType(p, s)
     }
 
-  private def arrayType: Parser[ArrayType] = "array" ~ "(" ~ dataType ~ ")" ^^ {
-    case _ ~ _ ~ x ~ _ => ArrayType(x)
-  }
+  private def arrayType: Parser[ArrayType] =
+    "array" ~ "(" ~ dataType ~ ")" ^^ {
+      case _ ~ _ ~ x ~ _ => ArrayType(x)
+    }
 
   private def mapType: Parser[DataType] =
     "map" ~ "(" ~ dataType ~ "," ~ dataType ~ ")" ^^ {
@@ -53,8 +54,7 @@ object JDBCTypeNameParser
   private def dataType: Parser[DataType] =
     varcharType | decimalType | arrayType | mapType | primitiveType
 
-  def parseDataType(s: String): Option[DataType] =
-  {
+  def parseDataType(s: String): Option[DataType] = {
     val input = s.toLowerCase(Locale.US).trim
     parseAll(dataType, input) match {
       case Success(result, next) => Some(result)
@@ -84,20 +84,19 @@ object JDBCTypeNameParser
   //    case _ => StringType
   //  }
 
-  private def toScalaPrimitiveType(typeName: String): DataType =
-  {
+  private def toScalaPrimitiveType(typeName: String): DataType = {
     typeName match {
-      case "bit" | "boolean" => BooleanType
-      case "tinyint" => ByteType
-      case "smallint" => ShortType
-      case "integer" => IntType
-      case "bigint" | "long" => LongType
-      case "float" | "real" => FloatType
-      case "double" => DoubleType
-      case "date" => DateType
-      case "json" => StringType
-      case "char" => StringType
-      case "numeric" | "decimal" => StringType // TODO
+      case "bit" | "boolean"              => BooleanType
+      case "tinyint"                      => ByteType
+      case "smallint"                     => ShortType
+      case "integer"                      => IntType
+      case "bigint" | "long"              => LongType
+      case "float" | "real"               => FloatType
+      case "double"                       => DoubleType
+      case "date"                         => DateType
+      case "json"                         => StringType
+      case "char"                         => StringType
+      case "numeric" | "decimal"          => StringType // TODO
       case t if t.startsWith("interval ") => StringType
       case "time" | "time with time zone" =>
         // Return string to be compatible with TD API

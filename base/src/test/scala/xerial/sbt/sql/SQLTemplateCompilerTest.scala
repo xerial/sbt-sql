@@ -1,7 +1,6 @@
 package xerial.sbt.sql
 
 /**
-  *
   */
 class SQLTemplateCompilerTest extends Spec {
   "SQLTemplateCompiler" should {

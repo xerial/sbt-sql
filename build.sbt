@@ -47,10 +47,6 @@ val buildSettings = Seq(
   // sbt plugin settings
   sbtPlugin := true,
   scalaVersion := SCALA_2_12,
-//  scalaCompilerBridgeSource := {
-//    val sv = appConfiguration.value.provider.id.version
-//    ("org.scala-sbt" % "compiler-interface" % sv % "component").sources
-//  }
   scriptedLaunchOpts := {
     scriptedLaunchOpts.value ++
             Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
@@ -78,8 +74,8 @@ commands += Command.command("bumpPluginVersion") {state =>
 
 lazy val root: Project =
   Project(id = "sbt-sql-root", base = file("."))
-  .enablePlugins(ScriptedPlugin)
-  .settings(
+ .enablePlugins(ScriptedPlugin)
+ .settings(
     buildSettings,
     scriptedBufferLog := false,
     publish := {},
@@ -103,7 +99,10 @@ lazy val root: Project =
       releaseStepCommand("sonatypeReleaseAll"),
       pushChanges
     )
-  ).aggregate(base, generic, sqlite, presto, td)
+  )
+  .aggregate(base, generic, sqlite, presto, td)
+  .dependsOn(base, generic, sqlite, presto, td)
+
 
 lazy val base: Project =
   Project(id = "sbt-sql-base", base = file("base"))

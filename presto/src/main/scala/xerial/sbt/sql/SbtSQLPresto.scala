@@ -6,12 +6,9 @@ import sbt.Keys._
 import sbt._
 import sbt.plugins.JvmPlugin
 
-object SbtSQLPresto
-        extends AutoPlugin
-{
+object SbtSQLPresto extends AutoPlugin {
 
-  object autoImport
-          extends SQL.Keys
+  object autoImport extends SQL.Keys
 
   import autoImport._
 
@@ -23,6 +20,6 @@ object SbtSQLPresto
 
   override def trigger = noTrigger
 
-  override def requires = JvmPlugin
+  override def requires        = JvmPlugin
   override def projectSettings = prestoSettings
 }

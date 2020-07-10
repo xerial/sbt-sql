@@ -5,12 +5,9 @@ import sbt.plugins.JvmPlugin
 import sbt.Keys._
 import sbt._
 
-object SbtSQLTreasureData
-        extends AutoPlugin
-{
+object SbtSQLTreasureData extends AutoPlugin {
 
-  object autoImport
-          extends SQL.Keys
+  object autoImport extends SQL.Keys
 
   import autoImport._
 
@@ -18,10 +15,11 @@ object SbtSQLTreasureData
     sqlDir := (sourceDirectory in Compile).value / "sql" / "presto",
     jdbcDriver := "io.prestosql.jdbc.PrestoDriver",
     jdbcURL := {
-      val host = credentials.value.collectFirst {
-        case d: DirectCredentials if d.realm == "Treasure Data" =>
-          d.host
-      }.getOrElse("api-presto.treasuredata.com")
+      val host = credentials.value
+        .collectFirst {
+          case d: DirectCredentials if d.realm == "Treasure Data" =>
+            d.host
+        }.getOrElse("api-presto.treasuredata.com")
       s"jdbc:presto://${host}:443/td-presto?SSL=true"
     },
     jdbcUser := {
@@ -36,6 +34,6 @@ object SbtSQLTreasureData
 
   override def trigger = noTrigger
 
-  override def requires = JvmPlugin
+  override def requires        = JvmPlugin
   override def projectSettings = prestoSettings
 }

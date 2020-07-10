@@ -7,11 +7,8 @@ import xerial.sbt.sql.DataType.{ArrayType, MapType, OptionType}
 import xerial.sbt.sql.SQLModelClassGenerator.JDBCResultColumn
 
 /**
- *
- */
-class SQLModelClassGeneratorTest
-        extends Spec
-{
+  */
+class SQLModelClassGeneratorTest extends Spec {
   "SQLModelClassGenerator" should {
     "generate case class code" in {
       val g = new SQLModelClassGenerator(
@@ -22,10 +19,12 @@ class SQLModelClassGeneratorTest
           password = "dummy"
         )
       )
-      g.generate(GeneratorConfig(
-        new File("base/src/test/sql/presto"),
-        new File("target/sbt-1.0/src_managed/test")
-      ))
+      g.generate(
+        GeneratorConfig(
+          new File("base/src/test/sql/presto"),
+          new File("target/sbt-1.0/src_managed/test")
+        )
+      )
     }
 
     "generate Scala type names" in {
@@ -39,7 +38,7 @@ class SQLModelClassGeneratorTest
         JDBCResultColumn("id", "varchar", Types.VARCHAR, true),
         JDBCResultColumn("param__optional", "bigint", Types.BIGINT, true),
         JDBCResultColumn("type", "varchar", Types.VARCHAR, true),
-        JDBCResultColumn("end_at", "bigint", Types.BIGINT, true),
+        JDBCResultColumn("end_at", "bigint", Types.BIGINT, true)
       )
       val schema = SQLModelClassGenerator.generateSchema(columns, Set("end_at"))
       schema shouldBe Schema(
@@ -49,7 +48,7 @@ class SQLModelClassGeneratorTest
           // quote Scala reserved words
           Column("`type`", DataType.StringType, JDBCType.VARCHAR, true),
           // Optional type specified by preamble
-          Column("end_at", OptionType(DataType.LongType), JDBCType.BIGINT, true),
+          Column("end_at", OptionType(DataType.LongType), JDBCType.BIGINT, true)
         )
       )
     }
