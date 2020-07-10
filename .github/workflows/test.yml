@@ -16,14 +16,14 @@ on:
 
 jobs:
   code_format:
-    name: Code format
+    name: code format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: scalafmt test
         run: ./sbt scalafmtCheckAll
   test_sbt_plugin:
-    name: sbt-scripted
+    name: sbt scripted test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -38,4 +38,5 @@ jobs:
       - name: build plugins
         run: ./sbt publishLocal
       - name: sbt scripted test
-        run: ./sbt scripted
+        # Skip sbt-sql-td test
+        run: ./sbt "scripted sbt-sql/* sbt-sql-sqlite/*"
