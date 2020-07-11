@@ -172,7 +172,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends LogSupport {
 
     val sqlTemplateArgs = sqlTemplate.params.map { p =>
       p.defaultValue match {
-        case None => s"${p.name}:${p.functionArgType}"
+        case None    => s"${p.name}:${p.functionArgType}"
         case Some(v) => s"${p.name}:${p.functionArgType} = ${p.quotedValue}"
       }
     }
@@ -180,12 +180,11 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends LogSupport {
     val paramNames = sqlTemplate.params.map(_.name)
 
     val additionalImports = sqlTemplate.imports.map(x => s"import ${x.target}").mkString("\n")
-    val embeddedSQL = "\"\"\"" + sqlTemplate.sql + "\"\"\""
+    val embeddedSQL       = "\"\"\"" + sqlTemplate.sql + "\"\"\""
 
     val packageLine = if (packageName.isEmpty) {
       ""
-    }
-    else {
+    } else {
       s"package ${packageName}"
     }
     val code =
