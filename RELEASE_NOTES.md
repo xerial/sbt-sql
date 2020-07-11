@@ -1,6 +1,11 @@
 Release Notes 
 ===
 
+## 0.13
+ - Support stream read with .selectStream(param){ iterator => ... }
+ - Remove the dependency to airframe-codec
+ - Improved the internal test coverage
+ - Upgrade sqlite-jdbc to 3.32.3
 
 ## 0.12
  - Support Option[X] types by using '__optional' column name suffix, or `@optional(col_name1, ...)` parameter. 
