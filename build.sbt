@@ -89,9 +89,9 @@ lazy val root: Project =
       commitReleaseVersion,
       tagRelease,
       releaseStepCommandAndRemaining("publishSigned"),
+      releaseStepCommand("sonatypeBundleRelease"),
       setNextVersion,
       commitNextVersion,
-      releaseStepCommand("sonatypeBundleRelease"),
       pushChanges
     )
   )
