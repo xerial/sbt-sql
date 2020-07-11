@@ -2,33 +2,27 @@ package example
 
 import java.sql.DriverManager
 
-object ReadSQLTest
-        extends wvlet.airspec.AirSpec
-{
+object ReadSQLTest extends wvlet.airspec.AirSpec {
 
   Class.forName("org.sqlite.JDBC")
 
   implicit val connection = DriverManager.getConnection("jdbc:sqlite::memory:")
 
-  private def execute(sql: String): Unit =
-  {
+  private def execute(sql: String): Unit = {
     val stmt = connection.createStatement()
     try {
       stmt.execute(sql)
-    }
-    finally {
+    } finally {
       stmt.close()
     }
   }
 
-  override protected def beforeAll: Unit =
-  {
+  override protected def beforeAll: Unit = {
     execute(s"create table person(id string, name string)")
     execute(s"insert into person values ('1', 'leo'), ('2', 'yui'), ('3', null)")
   }
 
-  override protected def afterAll: Unit =
-  {
+  override protected def afterAll: Unit = {
     connection.close()
   }
 
