@@ -85,13 +85,13 @@ object ReadSQLTest
     }
   }
 
-  test("generate case class xxx__optional") {
+  test("generate case class with xxx__optional column") {
     val result2 = person_opt.select()
     info(s"person_opt.select(): ${result2}")
     assert(result2 == Seq(person_opt("1", Some("leo")), person_opt("2", Some("yui")), person_opt("3", None)))
   }
 
-  test("generate case class using @optional parameter") {
+  test("generate case class with @optional column") {
     val result3 = person_opt2.select()
     info(s"person_opt2.select(): ${result3}")
     assert(result3 == Seq(person_opt2("1", Some("leo")), person_opt2("2", Some("yui")), person_opt2("3", None)))
