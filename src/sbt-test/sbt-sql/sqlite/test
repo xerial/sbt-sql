@@ -11,4 +11,4 @@
 # Confirm model file is generated
 > generateSQLModel
 $ exists target/scala-2.12/src_managed/main/person.scala
-> run
+
