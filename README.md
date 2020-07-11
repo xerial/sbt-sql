@@ -49,7 +49,7 @@ enablePlugins(SbtSQLJDBC)
 // Add your JDBC driver to the dependency
 // For using presto-jdbc
 libraryDependencies ++= Seq(
-  "org.wvlet.airframe" % "airframe-codec" % "20.4.1", // Necessary for mapping JDBC ResultSets to model classes
+  "org.wvlet.airframe" % "airframe-codec" % "20.6.2", // Necessary for mapping JDBC ResultSets to model classes
   "io.prestosql.presto" % "presto-jdbc" % "332"
  )
 
