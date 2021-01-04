@@ -10,7 +10,7 @@ import scala.util.parsing.combinator.RegexParsers
   * Parse JDBC Type Names (based on Presto's types)
   * This class defines mapping between Presto data type.
   *
-  * Presto types: https://prestosql.io/docs/current/language/types.html
+  * Presto types: https://trino.io/docs/current/language/types.html
   */
 object JDBCTypeNameParser extends RegexParsers with LogSupport {
 
