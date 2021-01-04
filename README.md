@@ -83,10 +83,9 @@ jdbcURL := "jdbc:trino://(your trino server address):443/(catalog name)"
 jdbcUser := "trino user name"
 ```
 
-### sbt-sql-td (Treasure Data Presto)
+### sbt-sql-td (Treasure Data)
 
-To use [Treasure Data](http://www.treasuredata.com/) Presto, set TD_API_KEY environment variable.
-`jdbcUser` will be set to this value.
+To use [Treasure Data](http://www.treasuredata.com/), set TD_API_KEY environment variable. `jdbcUser` will be set to this value. `src/main/sql/trino` will be the SQL file directory.
 
 Alternatively you can set TD_API_KEY in your sbt credential:
 
