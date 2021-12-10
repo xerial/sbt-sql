@@ -12,7 +12,7 @@ object SbtSQLTreasureData extends AutoPlugin {
   import autoImport._
 
   lazy val prestoSettings = SQL.sqlSettings ++ Seq(
-    sqlDir := (sourceDirectory in Compile).value / "sql" / "presto",
+    sqlDir := (Compile / sourceDirectory).value / "sql" / "presto",
     jdbcDriver := "io.prestosql.jdbc.PrestoDriver",
     jdbcURL := {
       val host = credentials.value

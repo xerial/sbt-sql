@@ -4,7 +4,7 @@ val PRESTO_VERSION = "333"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 
 val SCALA_2_12 = "2.12.11"
-scalaVersion in ThisBuild := SCALA_2_12
+ThisBuild / scalaVersion := SCALA_2_12
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -27,7 +27,7 @@ val buildSettings = Seq(
   organizationHomepage := Some(new URL("http://xerial.org/")),
   description := "A sbt plugin for generating model classes from SQL files",
   publishMavenStyle := true,
-  publishArtifact in Test := false,
+  Test / publishArtifact := false,
   pomIncludeRepository := { _ => false },
   parallelExecution := true,
   scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
@@ -51,7 +51,7 @@ val buildSettings = Seq(
 
 commands += Command.command("bumpPluginVersion") {state =>
   val extracted = Project.extract(state)
-  val newVersion = extracted.get(version in ThisBuild)
+  val newVersion = extracted.get(ThisBuild / version)
   val pluginSbt = file(".") ** "src" / "sbt-test" ** "project" ** "plugins.sbt"
   for (f <- pluginSbt.get) {
     state.log.info(s"update sbt-sql plugin version in ${f}")
@@ -77,7 +77,7 @@ lazy val root: Project =
     publishLocal := {},
     publishArtifact := false,
     test := {},
-    releaseTagName := {(version in ThisBuild).value},
+    releaseTagName := {(ThisBuild / version).value},
     releaseCrossBuild := true,
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
@@ -107,10 +107,10 @@ lazy val base: Project =
       "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
       "org.wvlet.airframe" %% "airframe-surface" % "20.6.2"
     ),
-    resourceGenerators in Compile += Def.task {
-      val buildProp = (resourceManaged in Compile).value / "org" / "xerial" / "sbt" / "sbt-sql" / "build.properties"
+    Compile / resourceGenerators += Def.task {
+      val buildProp = (Compile / resourceManaged).value / "org" / "xerial" / "sbt" / "sbt-sql" / "build.properties"
       val buildRev = scala.sys.process.Process("git" :: "rev-parse" :: "HEAD" :: Nil).!!.trim
-      val buildTime = ((sourceDirectory in Compile).value / "xerial/sbt/sql/SQLModelClassGenerator.scala").lastModified()
+      val buildTime = ((Compile / sourceDirectory).value / "xerial/sbt/sql/SQLModelClassGenerator.scala").lastModified()
       val contents = s"name=$name\nversion=${version.value}\nbuild_revision=$buildRev\nbuild_time=$buildTime"
       IO.write(buildProp, contents)
       Seq(buildProp)
