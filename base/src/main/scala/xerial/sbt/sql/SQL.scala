@@ -24,16 +24,16 @@ object SQL {
 
   // TODO split plugins for each jdbc drivers (mysqlSettings, prestoSettings, etc.)
   lazy val sqlSettings = Seq(
-    sqlDir := (sourceDirectory in Compile).value / "sql",
+    sqlDir := (Compile / sourceDirectory).value / "sql",
     generateSQLModel := {
       val config    = JDBCConfig(jdbcDriver.value, jdbcURL.value, jdbcUser.value, jdbcPassword.value)
       val generator = new SQLModelClassGenerator(config)
       generator.generate(
-        GeneratorConfig(sqlDir.value, (managedSourceDirectories in Compile).value.head)
+        GeneratorConfig(sqlDir.value, (Compile / managedSourceDirectories).value.head)
       )
     },
     sqlModelClasses := generateSQLModel.value,
-    sourceGenerators in Compile += sqlModelClasses.taskValue,
+    Compile / sourceGenerators += sqlModelClasses.taskValue,
     watchSources += new Source(
       sqlDir.value,
       new NameFilter {
