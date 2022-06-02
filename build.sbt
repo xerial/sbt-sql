@@ -3,7 +3,7 @@ import ReleaseTransformations._
 val PRESTO_VERSION                  = "333"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 
-val SCALA_2_12 = "2.12.11"
+val SCALA_2_12 = "2.12.15"
 ThisBuild / scalaVersion := SCALA_2_12
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
@@ -130,7 +130,7 @@ lazy val sqlite: Project =
       buildSettings,
       description := " A sbt plugin for genarting model classes from SQLite SQL files",
       libraryDependencies ++= Seq(
-        "org.xerial" % "sqlite-jdbc" % "3.32.3.3"
+        "org.xerial" % "sqlite-jdbc" % "3.32.3"
       )
     ).dependsOn(base)
 
