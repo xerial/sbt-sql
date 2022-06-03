@@ -3,7 +3,7 @@ import ReleaseTransformations._
 val PRESTO_VERSION                  = "333"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 
-val SCALA_2_12 = "2.12.11"
+val SCALA_2_12 = "2.12.15"
 ThisBuild / scalaVersion := SCALA_2_12
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
@@ -104,7 +104,7 @@ lazy val base: Project =
       buildSettings,
       libraryDependencies ++= Seq(
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
-        "org.wvlet.airframe"     %% "airframe-surface"         % "20.6.2"
+        "org.wvlet.airframe"     %% "airframe-surface"         % "20.12.2"
       ),
       Compile / resourceGenerators += Def.task {
         val buildProp = (Compile / resourceManaged).value / "org" / "xerial" / "sbt" / "sbt-sql" / "build.properties"
