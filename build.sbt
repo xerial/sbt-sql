@@ -36,7 +36,7 @@ val buildSettings = Seq(
     "org.scala-lang" % "scala-compiler" % scalaVersion.value,
     // Scala 2.10 contains parser combinators
     //"org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5",
-    "org.scalatest" %% "scalatest"   % "3.0.9"        % "test",
+    "org.scalatest" %% "scalatest"   % "3.2.14"       % "test",
     "io.prestosql"   % "presto-jdbc" % PRESTO_VERSION % "test"
   ),
   // sbt plugin settings
@@ -104,7 +104,7 @@ lazy val base: Project =
       buildSettings,
       libraryDependencies ++= Seq(
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
-        "org.wvlet.airframe"     %% "airframe-surface"         % "22.10.4"
+        "org.wvlet.airframe"     %% "airframe-surface"         % "22.11.0"
       ),
       Compile / resourceGenerators += Def.task {
         val buildProp = (Compile / resourceManaged).value / "org" / "xerial" / "sbt" / "sbt-sql" / "build.properties"
