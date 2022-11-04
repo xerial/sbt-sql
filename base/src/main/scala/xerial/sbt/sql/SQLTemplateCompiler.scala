@@ -5,8 +5,7 @@ import xerial.lens.TypeUtil
 
 import scala.util.{Failure, Success, Try}
 
-/**
-  */
+/** */
 object SQLTemplateCompiler extends LogSupport {
 
   private def defaultValueFor(typeName: String): Any =

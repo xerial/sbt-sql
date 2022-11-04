@@ -1,7 +1,6 @@
 package xerial.sbt.sql
 
-/**
-  */
+/** */
 object DataType {
 
   case object BooleanType extends DataType("Boolean")

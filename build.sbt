@@ -1,9 +1,9 @@
 import ReleaseTransformations._
 
-val PRESTO_VERSION                  = "333"
+val PRESTO_VERSION                  = "350"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 
-val SCALA_2_12 = "2.12.15"
+val SCALA_2_12 = "2.12.17"
 ThisBuild / scalaVersion := SCALA_2_12
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
@@ -36,7 +36,7 @@ val buildSettings = Seq(
     "org.scala-lang" % "scala-compiler" % scalaVersion.value,
     // Scala 2.10 contains parser combinators
     //"org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5",
-    "org.scalatest" %% "scalatest"   % "3.0.1"        % "test",
+    "org.scalatest" %% "scalatest"   % "3.2.14"       % "test",
     "io.prestosql"   % "presto-jdbc" % PRESTO_VERSION % "test"
   ),
   // sbt plugin settings
@@ -104,7 +104,7 @@ lazy val base: Project =
       buildSettings,
       libraryDependencies ++= Seq(
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
-        "org.wvlet.airframe"     %% "airframe-surface"         % "20.6.2"
+        "org.wvlet.airframe"     %% "airframe-surface"         % "22.11.0"
       ),
       Compile / resourceGenerators += Def.task {
         val buildProp = (Compile / resourceManaged).value / "org" / "xerial" / "sbt" / "sbt-sql" / "build.properties"
@@ -130,7 +130,7 @@ lazy val sqlite: Project =
       buildSettings,
       description := " A sbt plugin for genarting model classes from SQLite SQL files",
       libraryDependencies ++= Seq(
-        "org.xerial" % "sqlite-jdbc" % "3.32.3"
+        "org.xerial" % "sqlite-jdbc" % "3.39.3.0"
       )
     ).dependsOn(base)
 
