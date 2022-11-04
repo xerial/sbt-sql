@@ -6,8 +6,7 @@ import wvlet.log.LogSupport
 
 import scala.util.parsing.combinator.RegexParsers
 
-/** Parse JDBC Type Names (based on Presto's types)
-  * This class defines mapping between Presto data type.
+/** Parse JDBC Type Names (based on Presto's types) This class defines mapping between Presto data type.
   *
   * Presto types: https://prestosql.io/docs/current/language/types.html
   */
