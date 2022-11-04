@@ -4,15 +4,14 @@ import sbt.Keys._
 import sbt._
 import sbt.internal.io.Source
 
-/**
-  */
+/** */
 object SQL {
 
   trait Keys {
-    val sqlDir           = settingKey[File]("A folder containing SQL files. e.g. src/main/sql")
-    val jdbcDriver       = settingKey[String]("JDBC driver class name. e.g., com.facebook.presto.jdbc.PrestoDriver")
-    val jdbcURL          = taskKey[String]("JDBC connection URL. e.g., jdbc:presto://api-presto.treasuredata.com:443/td-presto")
-    val jdbcUser         = taskKey[String]("JDBC user name")
+    val sqlDir     = settingKey[File]("A folder containing SQL files. e.g. src/main/sql")
+    val jdbcDriver = settingKey[String]("JDBC driver class name. e.g., com.facebook.presto.jdbc.PrestoDriver")
+    val jdbcURL  = taskKey[String]("JDBC connection URL. e.g., jdbc:presto://api-presto.treasuredata.com:443/td-presto")
+    val jdbcUser = taskKey[String]("JDBC user name")
     val jdbcPassword     = taskKey[String]("JDBC password")
     val generateSQLModel = taskKey[Seq[File]]("create model classes from SQL files")
     val sqlModelClasses  = taskKey[Seq[File]]("Generated SQL model classes")
@@ -43,7 +42,7 @@ object SQL {
       },
       NothingFilter
     ),
-    jdbcUser := "",
+    jdbcUser     := "",
     jdbcPassword := ""
   )
 }

@@ -37,8 +37,7 @@ object Preamble {
 
 import Preamble._
 
-/**
-  */
+/** */
 object SQLTemplateParser extends LogSupport {
 
   case class Pos(line: Int, pos: Int)

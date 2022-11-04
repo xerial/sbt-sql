@@ -11,8 +11,7 @@ private[sql] case class JDBCConfig(
     password: String
 )
 
-/**
-  */
+/** */
 class JDBCClient(config: JDBCConfig) extends LogSupport {
   private def withResource[R <: AutoCloseable, U](r: R)(body: R => U): U = {
     try {
