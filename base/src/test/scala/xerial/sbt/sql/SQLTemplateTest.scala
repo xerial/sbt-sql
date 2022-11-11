@@ -2,8 +2,7 @@ package xerial.sbt.sql
 
 import xerial.sbt.sql.Preamble.FunctionArg
 
-/**
-  */
+/** */
 class SQLTemplateTest extends Spec {
 
   "SQLTemplate" should {

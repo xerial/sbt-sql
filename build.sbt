@@ -1,6 +1,6 @@
 import ReleaseTransformations._
 
-val PRESTO_VERSION                  = "333"
+val PRESTO_VERSION                  = "350"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 
 val SCALA_2_12 = "2.12.17"
@@ -9,7 +9,7 @@ ThisBuild / scalaVersion := SCALA_2_12
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val buildSettings = Seq(
-  organization := "org.xerial.sbt",
+  organization        := "org.xerial.sbt",
   sonatypeProfileName := "org.xerial",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://github.com/xerial/sbt-sql")),
@@ -22,25 +22,25 @@ val buildSettings = Seq(
   developers := List(
     Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
   ),
-  publishTo := sonatypePublishToBundle.value,
-  organizationName := "Xerial project",
-  organizationHomepage := Some(new URL("http://xerial.org/")),
-  description := "A sbt plugin for generating model classes from SQL files",
-  publishMavenStyle := true,
+  publishTo              := sonatypePublishToBundle.value,
+  organizationName       := "Xerial project",
+  organizationHomepage   := Some(new URL("http://xerial.org/")),
+  description            := "A sbt plugin for generating model classes from SQL files",
+  publishMavenStyle      := true,
   Test / publishArtifact := false,
-  pomIncludeRepository := { _ => false },
-  parallelExecution := true,
+  pomIncludeRepository   := { _ => false },
+  parallelExecution      := true,
   scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
   libraryDependencies ++= Seq(
     "org.xerial"    %% "xerial-lens"    % "3.6.0",
     "org.scala-lang" % "scala-compiler" % scalaVersion.value,
     // Scala 2.10 contains parser combinators
-    //"org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5",
+    // "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5",
     "org.scalatest" %% "scalatest"   % "3.2.14"       % "test",
     "io.prestosql"   % "presto-jdbc" % PRESTO_VERSION % "test"
   ),
   // sbt plugin settings
-  sbtPlugin := true,
+  sbtPlugin    := true,
   scalaVersion := SCALA_2_12,
   scriptedLaunchOpts := {
     scriptedLaunchOpts.value ++
@@ -73,11 +73,11 @@ lazy val root: Project =
     .settings(
       buildSettings,
       scriptedBufferLog := false,
-      publish := {},
-      publishLocal := {},
-      publishArtifact := false,
-      test := {},
-      releaseTagName := { (ThisBuild / version).value },
+      publish           := {},
+      publishLocal      := {},
+      publishArtifact   := false,
+      test              := {},
+      releaseTagName    := { (ThisBuild / version).value },
       releaseCrossBuild := true,
       releaseProcess := Seq[ReleaseStep](
         checkSnapshotDependencies,
@@ -130,7 +130,7 @@ lazy val sqlite: Project =
       buildSettings,
       description := " A sbt plugin for genarting model classes from SQLite SQL files",
       libraryDependencies ++= Seq(
-        "org.xerial" % "sqlite-jdbc" % "3.39.3.0"
+        "org.xerial" % "sqlite-jdbc" % "3.39.4.0"
       )
     ).dependsOn(base)
 
