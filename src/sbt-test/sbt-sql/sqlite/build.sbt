@@ -2,7 +2,7 @@ enablePlugins(SbtSQLJDBC)
 
 name := "sbt-sql-test"
 libraryDependencies ++= Seq(
-  "org.xerial" % "sqlite-jdbc" % "3.39.4.0"
+  "org.xerial" % "sqlite-jdbc" % "3.39.4.1"
 )
 
 // You can change SQL file folder. The default is src/main/sql
