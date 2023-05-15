@@ -1,15 +1,15 @@
 import ReleaseTransformations._
 
-val TRINO_VERSION = "351"
+val TRINO_VERSION                   = "351"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 
-val SCALA_2_12 = "2.12.11"
-scalaVersion in ThisBuild := SCALA_2_12
+val SCALA_2_12 = "2.12.17"
+ThisBuild / scalaVersion := SCALA_2_12
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val buildSettings = Seq(
-  organization := "org.xerial.sbt",
+  organization        := "org.xerial.sbt",
   sonatypeProfileName := "org.xerial",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://github.com/xerial/sbt-sql")),
@@ -22,37 +22,37 @@ val buildSettings = Seq(
   developers := List(
     Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
   ),
-  publishTo := sonatypePublishToBundle.value,
-  organizationName := "Xerial project",
-  organizationHomepage := Some(new URL("https://xerial.org/")),
-  description := "A sbt plugin for generating model classes from SQL files",
-  publishMavenStyle := true,
-  publishArtifact in Test := false,
-  pomIncludeRepository := { _ => false },
-  parallelExecution := true,
+  publishTo              := sonatypePublishToBundle.value,
+  organizationName       := "Xerial project",
+  organizationHomepage   := Some(new URL("https://xerial.org/")),
+  description            := "A sbt plugin for generating model classes from SQL files",
+  publishMavenStyle      := true,
+  Test / publishArtifact := false,
+  pomIncludeRepository   := { _ => false },
+  parallelExecution      := true,
   scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
   libraryDependencies ++= Seq(
-    "org.xerial" %% "xerial-lens" % "3.6.0",
+    "org.xerial"    %% "xerial-lens"    % "3.6.0",
     "org.scala-lang" % "scala-compiler" % scalaVersion.value,
     // Scala 2.10 contains parser combinators
-    //"org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5",
-    "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-    "io.trino" % "trino-jdbc" % TRINO_VERSION % "test"
+    // "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5",
+    "org.scalatest" %% "scalatest"  % "3.2.16"      % "test",
+    "io.trino"       % "trino-jdbc" % TRINO_VERSION % "test"
   ),
   // sbt plugin settings
-  sbtPlugin := true,
+  sbtPlugin    := true,
   scalaVersion := SCALA_2_12,
   scriptedLaunchOpts := {
     scriptedLaunchOpts.value ++
-            Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
+      Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
   },
   crossSbtVersions := Vector("1.4.6")
 )
 
-commands += Command.command("bumpPluginVersion") {state =>
-  val extracted = Project.extract(state)
-  val newVersion = extracted.get(version in ThisBuild)
-  val pluginSbt = file(".") ** "src" / "sbt-test" ** "project" ** "plugins.sbt"
+commands += Command.command("bumpPluginVersion") { state =>
+  val extracted  = Project.extract(state)
+  val newVersion = extracted.get(ThisBuild / version)
+  val pluginSbt  = file(".") ** "src" / "sbt-test" ** "project" ** "plugins.sbt"
   for (f <- pluginSbt.get) {
     state.log.info(s"update sbt-sql plugin version in ${f}")
     val updated = (for (line <- IO.readLines(f)) yield {
@@ -69,88 +69,87 @@ commands += Command.command("bumpPluginVersion") {state =>
 
 lazy val root: Project =
   Project(id = "sbt-sql-root", base = file("."))
- .enablePlugins(ScriptedPlugin)
- .settings(
-    buildSettings,
-    scriptedBufferLog := false,
-    publish := {},
-    publishLocal := {},
-    publishArtifact := false,
-    test := {},
-    releaseTagName := {(version in ThisBuild).value},
-    releaseCrossBuild := true,
-    releaseProcess := Seq[ReleaseStep](
-      checkSnapshotDependencies,
-      inquireVersions,
-      runClean,
-      runTest,
-      releaseStepCommandAndRemaining("scripted"),
-      setReleaseVersion,
-      commitReleaseVersion,
-      tagRelease,
-      releaseStepCommandAndRemaining("publishSigned"),
-      releaseStepCommand("sonatypeBundleRelease"),
-      setNextVersion,
-      commitNextVersion,
-      pushChanges
+    .enablePlugins(ScriptedPlugin)
+    .settings(
+      buildSettings,
+      scriptedBufferLog := false,
+      publish           := {},
+      publishLocal      := {},
+      publishArtifact   := false,
+      test              := {},
+      releaseTagName    := { (ThisBuild / version).value },
+      releaseCrossBuild := true,
+      releaseProcess := Seq[ReleaseStep](
+        checkSnapshotDependencies,
+        inquireVersions,
+        runClean,
+        runTest,
+        releaseStepCommandAndRemaining("scripted"),
+        setReleaseVersion,
+        commitReleaseVersion,
+        tagRelease,
+        releaseStepCommandAndRemaining("publishSigned"),
+        releaseStepCommand("sonatypeBundleRelease"),
+        setNextVersion,
+        commitNextVersion,
+        pushChanges
+      )
     )
-  )
-  .aggregate(base, generic, sqlite, trino, td)
-  .dependsOn(base, generic, sqlite, trino, td)
-
+    .aggregate(base, generic, sqlite, trino, td)
+    .dependsOn(base, generic, sqlite, trino, td)
 
 lazy val base: Project =
   Project(id = "sbt-sql-base", base = file("base"))
-  .settings(
-    buildSettings,
-    libraryDependencies ++= Seq(
-      "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
-      "org.wvlet.airframe" %% "airframe-surface" % "21.1.0"
-    ),
-    resourceGenerators in Compile += Def.task {
-      val buildProp = (resourceManaged in Compile).value / "org" / "xerial" / "sbt" / "sbt-sql" / "build.properties"
-      val buildRev = scala.sys.process.Process("git" :: "rev-parse" :: "HEAD" :: Nil).!!.trim
-      val buildTime = ((sourceDirectory in Compile).value / "xerial/sbt/sql/SQLModelClassGenerator.scala").lastModified()
-      val contents = s"name=$name\nversion=${version.value}\nbuild_revision=$buildRev\nbuild_time=$buildTime"
-      IO.write(buildProp, contents)
-      Seq(buildProp)
-    }.taskValue
-  )
+    .settings(
+      buildSettings,
+      libraryDependencies ++= Seq(
+        "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
+        "org.wvlet.airframe"     %% "airframe-surface"         % "22.11.4"
+      ),
+      Compile / resourceGenerators += Def.task {
+        val buildProp = (Compile / resourceManaged).value / "org" / "xerial" / "sbt" / "sbt-sql" / "build.properties"
+        val buildRev  = scala.sys.process.Process("git" :: "rev-parse" :: "HEAD" :: Nil).!!.trim
+        val buildTime =
+          ((Compile / sourceDirectory).value / "xerial/sbt/sql/SQLModelClassGenerator.scala").lastModified()
+        val contents = s"name=$name\nversion=${version.value}\nbuild_revision=$buildRev\nbuild_time=$buildTime"
+        IO.write(buildProp, contents)
+        Seq(buildProp)
+      }.taskValue
+    )
 
 lazy val generic: Project =
   Project(id = "sbt-sql", base = file("generic"))
-  .settings(
-    buildSettings,
-    description := " A sbt plugin for generating model classes from SQL files"
-  ).dependsOn(base)
+    .settings(
+      buildSettings,
+      description := " A sbt plugin for generating model classes from SQL files"
+    ).dependsOn(base)
 
 lazy val sqlite: Project =
   Project(id = "sbt-sql-sqlite", base = file("sqlite"))
-  .settings(
-    buildSettings,
-    description := " A sbt plugin for genarting model classes from SQLite SQL files",
-    libraryDependencies ++= Seq(
-      "org.xerial" % "sqlite-jdbc" % "3.32.3"
-    )
-  ).dependsOn(base)
+    .settings(
+      buildSettings,
+      description := " A sbt plugin for genarting model classes from SQLite SQL files",
+      libraryDependencies ++= Seq(
+        "org.xerial" % "sqlite-jdbc" % "3.39.4.0"
+      )
+    ).dependsOn(base)
 
 lazy val trino: Project =
   Project(id = "sbt-sql-trino", base = file("trino"))
-  .settings(
-    buildSettings,
-    description := " A sbt plugin for generating model classes from Trino SQL files",
-    libraryDependencies ++= Seq(
-      "io.trino" % "trino-jdbc" % TRINO_VERSION
-    )
-  ).dependsOn(base)
+    .settings(
+      buildSettings,
+      description := " A sbt plugin for generating model classes from Trino SQL files",
+      libraryDependencies ++= Seq(
+        "io.trino" % "trino-jdbc" % TRINO_VERSION
+      )
+    ).dependsOn(base)
 
 lazy val td: Project =
   Project(id = "sbt-sql-td", base = file("td"))
-  .settings(
-    buildSettings,
-    description := " A sbt plugin for generating model classes from Treasure Data SQL files",
-    libraryDependencies ++= Seq(
-      "io.trino" % "trino-jdbc" % TRINO_VERSION
-    )
-  )
-  .dependsOn(base)
+    .settings(
+      buildSettings,
+      description := " A sbt plugin for generating model classes from Treasure Data SQL files",
+      libraryDependencies ++= Seq(
+        "io.trino" % "trino-jdbc" % TRINO_VERSION
+      )
+    ).dependsOn(base)

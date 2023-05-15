@@ -4,8 +4,7 @@ import sbt._
 import sbt.Keys.sourceDirectory
 import sbt.plugins.JvmPlugin
 
-/**
-  */
+/** */
 object SbtSQLSQLite extends AutoPlugin {
 
   object autoImport extends SQL.Keys
@@ -13,7 +12,7 @@ object SbtSQLSQLite extends AutoPlugin {
   import autoImport._
 
   lazy val sqliteSettings = SQL.sqlSettings ++ Seq(
-    sqlDir := (sourceDirectory in Compile).value / "sql" / "sqlite",
+    sqlDir     := (Compile / sourceDirectory).value / "sql" / "sqlite",
     jdbcDriver := "org.sqlite.JDBC",
     // TODO support multiple files
     jdbcURL := "jdbc:sqlite::memory::"

@@ -3,8 +3,7 @@ package xerial.sbt.sql
 import sbt.AutoPlugin
 import sbt.plugins.JvmPlugin
 
-/**
-  */
+/** */
 object SbtSQLJDBC extends AutoPlugin {
 
   object autoImport extends SQL.Keys

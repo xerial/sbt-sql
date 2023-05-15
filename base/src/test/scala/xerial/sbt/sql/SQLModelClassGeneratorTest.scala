@@ -6,8 +6,7 @@ import java.sql.{JDBCType, Types}
 import xerial.sbt.sql.DataType.{ArrayType, MapType, OptionType}
 import xerial.sbt.sql.SQLModelClassGenerator.JDBCResultColumn
 
-/**
-  */
+/** */
 class SQLModelClassGeneratorTest extends Spec {
   "SQLModelClassGenerator" should {
     "generate case class code" in {

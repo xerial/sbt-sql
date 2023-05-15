@@ -6,9 +6,7 @@ import wvlet.log.LogSupport
 
 import scala.util.parsing.combinator.RegexParsers
 
-/**
-  * Parse JDBC Type Names (based on Presto's types)
-  * This class defines mapping between Presto data type.
+/** Parse JDBC Type Names (based on Presto's types) This class defines mapping between Presto data type.
   *
   * Presto types: https://trino.io/docs/current/language/types.html
   */
@@ -29,26 +27,24 @@ object JDBCTypeNameParser extends RegexParsers with LogSupport {
     }
 
   private def varcharType: Parser[DataType] =
-    "varchar" ~ opt("(" ~ number ~ ")") ^^ {
-      case _ => StringType
+    "varchar" ~ opt("(" ~ number ~ ")") ^^ { case _ =>
+      StringType
     }
 
   private def decimalType: Parser[DecimalType] =
-    "decimal" ~ "(" ~ number ~ "," ~ number ~ ")" ^^ {
-      case _ ~ _ ~ p ~ _ ~ s ~ _ =>
-        DecimalType(p, s)
+    "decimal" ~ "(" ~ number ~ "," ~ number ~ ")" ^^ { case _ ~ _ ~ p ~ _ ~ s ~ _ =>
+      DecimalType(p, s)
     }
 
   private def arrayType: Parser[ArrayType] =
-    "array" ~ "(" ~ dataType ~ ")" ^^ {
-      case _ ~ _ ~ x ~ _ => ArrayType(x)
+    "array" ~ "(" ~ dataType ~ ")" ^^ { case _ ~ _ ~ x ~ _ =>
+      ArrayType(x)
     }
 
   private def mapType: Parser[DataType] =
-    "map" ~ "(" ~ dataType ~ "," ~ dataType ~ ")" ^^ {
-      case _ ~ _ ~ k ~ _ ~ v ~ _ =>
-        // Reading map type is not supported in JdbcUtil of Spark, so use String instead
-        MapType(k, v)
+    "map" ~ "(" ~ dataType ~ "," ~ dataType ~ ")" ^^ { case _ ~ _ ~ k ~ _ ~ v ~ _ =>
+      // Reading map type is not supported in JdbcUtil of Spark, so use String instead
+      MapType(k, v)
     }
 
   private def dataType: Parser[DataType] =

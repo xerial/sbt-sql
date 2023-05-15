@@ -37,8 +37,7 @@ object Preamble {
 
 import Preamble._
 
-/**
-  */
+/** */
 object SQLTemplateParser extends LogSupport {
 
   case class Pos(line: Int, pos: Int)
@@ -111,8 +110,8 @@ object SQLTemplateParser extends LogSupport {
     def typeName: Parser[String]    = ident | tupleType | genericType
     def genericType: Parser[String] = ident ~ "[" ~ typeName ~ rep("," ~ typeName) ~ "]" ^^ { _._2 }
     def tupleType: Parser[String] =
-      "(" ~ typeName ~ rep("," ~ typeName) ~ ")" ^^ {
-        case _ ~ first ~ rest ~ _ => s"(${(Seq(first) ++ rest.map(_._2).toSeq).mkString(",")})"
+      "(" ~ typeName ~ rep("," ~ typeName) ~ ")" ^^ { case _ ~ first ~ rest ~ _ =>
+        s"(${(Seq(first) ++ rest.map(_._2).toSeq).mkString(",")})"
       }
 
     def function: Parser[Function] = "@(" ~ args ~ ")" ^^ { case _ ~ args ~ _ => Function(args) }
@@ -122,8 +121,8 @@ object SQLTemplateParser extends LogSupport {
     def optional: Parser[Optional] = "@optional(" ~ repsep(ident, ',') ~ ")" ^^ { case _ ~ cols ~ _ => Optional(cols) }
 
     def classRef: Parser[String] =
-      ident ~ rep('.' ~ ident) ^^ {
-        case h ~ t => (h :: t.map(_._2)).mkString(".")
+      ident ~ rep('.' ~ ident) ^^ { case h ~ t =>
+        (h :: t.map(_._2)).mkString(".")
       }
 
     def preamble: Parser[Preamble] = function | importStmt | optional

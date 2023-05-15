@@ -12,7 +12,7 @@ object SbtSQLTreasureData extends AutoPlugin {
   import autoImport._
 
   lazy val tdSettings = SQL.sqlSettings ++ Seq(
-    sqlDir := (sourceDirectory in Compile).value / "sql" / "trino",
+    sqlDir     := (Compile / sourceDirectory).value / "sql" / "trino",
     jdbcDriver := "io.trino.jdbc.TrinoDriver",
     jdbcURL := {
       val host = credentials.value

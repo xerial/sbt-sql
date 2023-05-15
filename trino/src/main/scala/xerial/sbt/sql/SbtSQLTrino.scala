@@ -13,9 +13,9 @@ object SbtSQLTrino extends AutoPlugin {
   import autoImport._
 
   lazy val trinoSettings = SQL.sqlSettings ++ Seq(
-    sqlDir := (sourceDirectory in Compile).value / "sql" / "trino",
+    sqlDir     := (sourceDirectory in Compile).value / "sql" / "trino",
     jdbcDriver := "io.trino.jdbc.TrinoDriver",
-    jdbcURL := "jdbc:trino://(your trino server url)/(catalog name)"
+    jdbcURL    := "jdbc:trino://(your trino server url)/(catalog name)"
   )
 
   override def trigger = noTrigger
