@@ -101,7 +101,7 @@ enablePlugins(SbtSQLTreasureData)
 
 ## Writing SQL
 
-**src/main/sql/presto/sample/nasdaq.sql**
+**src/main/sql/trino/sample/nasdaq.sql**
 ```sql
 @(start:Long, end:Long)
 select * from sample_datasets.nasdaq
