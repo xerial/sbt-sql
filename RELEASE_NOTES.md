@@ -1,6 +1,8 @@
 Release Notes 
 ===
 
+The latest release notes are available from here https://github.com/xerial/sbt-sql/releases
+
 ## 0.13
  - Support stream read with .selectStream(param){ iterator => ... }
  - Remove the dependency to airframe-control
