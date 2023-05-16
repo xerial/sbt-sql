@@ -1,6 +1,6 @@
 import ReleaseTransformations._
 
-val TRINO_VERSION                   = "351"
+val TRINO_VERSION                   = "417"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 
 val SCALA_2_12 = "2.12.17"
@@ -104,7 +104,7 @@ lazy val base: Project =
       buildSettings,
       libraryDependencies ++= Seq(
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
-        "org.wvlet.airframe"     %% "airframe-surface"         % "22.11.4"
+        "org.wvlet.airframe"     %% "airframe-surface"         % "22.12.6"
       ),
       Compile / resourceGenerators += Def.task {
         val buildProp = (Compile / resourceManaged).value / "org" / "xerial" / "sbt" / "sbt-sql" / "build.properties"
