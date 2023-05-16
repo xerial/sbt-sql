@@ -19,14 +19,14 @@ jobs:
     name: code format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: scalafmt test
         run: ./sbt scalafmtCheckAll
   unit_test:
     name: unit tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: olafurpg/setup-scala@v13
         with:
           java-version: openjdk@1.11
@@ -36,7 +36,7 @@ jobs:
     name: sbt scripted tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: olafurpg/setup-scala@v13
         with:
           java-version: openjdk@1.11
