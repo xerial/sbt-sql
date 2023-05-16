@@ -11,16 +11,16 @@ object SbtSQLTreasureData extends AutoPlugin {
 
   import autoImport._
 
-  lazy val prestoSettings = SQL.sqlSettings ++ Seq(
-    sqlDir     := (Compile / sourceDirectory).value / "sql" / "presto",
-    jdbcDriver := "io.prestosql.jdbc.PrestoDriver",
+  lazy val tdSettings = SQL.sqlSettings ++ Seq(
+    sqlDir     := (Compile / sourceDirectory).value / "sql" / "trino",
+    jdbcDriver := "io.trino.jdbc.TrinoDriver",
     jdbcURL := {
       val host = credentials.value
         .collectFirst {
           case d: DirectCredentials if d.realm == "Treasure Data" =>
             d.host
         }.getOrElse("api-presto.treasuredata.com")
-      s"jdbc:presto://${host}:443/td-presto?SSL=true"
+      s"jdbc:trino://${host}:443/td-presto?SSL=true"
     },
     jdbcUser := {
       val user = credentials.value.collectFirst {
@@ -35,5 +35,5 @@ object SbtSQLTreasureData extends AutoPlugin {
   override def trigger = noTrigger
 
   override def requires        = JvmPlugin
-  override def projectSettings = prestoSettings
+  override def projectSettings = tdSettings
 }

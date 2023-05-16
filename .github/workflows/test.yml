@@ -30,11 +30,6 @@ jobs:
       - uses: olafurpg/setup-scala@v13
         with:
           java-version: openjdk@1.11
-      - uses: actions/cache@v1
-        with:
-          path: ~/.cache
-          key: ${{ runner.os }}-unittest-${{ hashFiles('**/*.sbt') }}
-          restore-keys: ${{ runner.os }}-unittest-
       - name: Unit tests
         run: ./sbt test
   test_sbt_plugin:
@@ -45,11 +40,6 @@ jobs:
       - uses: olafurpg/setup-scala@v13
         with:
           java-version: openjdk@1.11
-      - uses: actions/cache@v1
-        with:
-          path: ~/.cache
-          key: ${{ runner.os }}-sbt-${{ hashFiles('**/*.sbt') }}
-          restore-keys: ${{ runner.os }}-sbt-
       - name: build plugins
         run: ./sbt publishLocal
       - name: sbt scripted test

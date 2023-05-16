@@ -22,8 +22,8 @@ sbt-sql supports only sbt 1.3.x or higher.
 
 **project/plugins.sbt**
 ```scala
-// For Presto
-addSbtPlugin("org.xerial.sbt" % "sbt-sql-presto" % "(version)")
+// For Trino
+addSbtPlugin("org.xerial.sbt" % "sbt-sql-trino" % "(version)")
 
 // For SQLite (available since 0.7.0)
 addSbtPlugin("org.xerial.sbt" % "sbt-sql-sqlite" % "(version)")
@@ -47,18 +47,18 @@ This is an example of using a custom JDBC driver:
 enablePlugins(SbtSQLJDBC)
 
 // Add your JDBC driver to the dependency
-// For using presto-jdbc
+// For using trino-jdbc
 libraryDependencies ++= Seq(
-  "org.wvlet.airframe" % "airframe-codec" % "20.6.2", // Necessary for mapping JDBC ResultSets to model classes
-  "io.prestosql.presto" % "presto-jdbc" % "332"
+  "org.wvlet.airframe" % "airframe-codec" % "21.1.0", // Necessary for mapping JDBC ResultSets to model classes
+  "io.trino" % "trino-jdbc" % "332"
  )
 
 // You can change SQL file folder. The default is src/main/sql
 // sqlDir := (sourceDirectory in Compile).value / "sql"
 
-// Configure your JDBC driver
-jdbcDriver := "io.prestosql.jdbc.PrestoDriver"
-jdbcURL := "(jdbc url e.g., jdbc:presto://.... )"
+// Configure your JDBC driver (e.g., using Trino JDBC)
+jdbcDriver := "io.trino.jdbc.TrinoDriver"
+jdbcURL := "(jdbc url e.g., jdbc:trino://.... )"
 jdbcUser := "(jdbc user name)"
 jdbcPassword := "(jdbc password)"
 ```
@@ -72,21 +72,20 @@ enablePlugins(SbtSQLSQLite)
 jdbcURL := "jdbc:sqlite:(sqlite db file path)"
 ```
 
-### sbt-sql-presto
+### sbt-sql-trino
 
-`sbt-sql-presto` plugin uses `src/main/sql/presto` as the SQL file directory. Configure `jdbcURL` and `jdbcUser` properties:
+`sbt-sql-trino` plugin uses `src/main/sql/trino` as the SQL file directory. Configure `jdbcURL` and `jdbcUser` properties:
 
 ```scala
-enablePlugins(SbtSQLPresto)
+enablePlugins(SbtSQLTrino)
 
-jdbcURL := "jdbc:presto://api-presto.treasuredata.com:443/td-presto"
-jdbcUser := "presto user name"
+jdbcURL := "jdbc:trino://(your trino server address):443/(catalog name)"
+jdbcUser := "trino user name"
 ```
 
-### sbt-sql-td (Treasure Data Presto)
+### sbt-sql-td (Treasure Data)
 
-To use [Treasure Data](http://www.treasuredata.com/) Presto, set TD_API_KEY environment variable.
-`jdbcUser` will be set to this value.
+To use [Treasure Data](http://www.treasuredata.com/), set TD_API_KEY environment variable. `jdbcUser` will be set to this value. `src/main/sql/trino` will be the SQL file directory.
 
 Alternatively you can set TD_API_KEY in your sbt credential:
 
@@ -102,7 +101,7 @@ enablePlugins(SbtSQLTreasureData)
 
 ## Writing SQL
 
-**src/main/sql/presto/sample/nasdaq.sql**
+**src/main/sql/trino/sample/nasdaq.sql**
 ```sql
 @(start:Long, end:Long)
 select * from sample_datasets.nasdaq
