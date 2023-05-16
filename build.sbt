@@ -1,6 +1,6 @@
 import ReleaseTransformations._
 
-val PRESTO_VERSION                  = "350"
+val TRINO_VERSION                   = "351"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 
 val SCALA_2_12 = "2.12.17"
@@ -24,7 +24,7 @@ val buildSettings = Seq(
   ),
   publishTo              := sonatypePublishToBundle.value,
   organizationName       := "Xerial project",
-  organizationHomepage   := Some(new URL("http://xerial.org/")),
+  organizationHomepage   := Some(new URL("https://xerial.org/")),
   description            := "A sbt plugin for generating model classes from SQL files",
   publishMavenStyle      := true,
   Test / publishArtifact := false,
@@ -36,8 +36,8 @@ val buildSettings = Seq(
     "org.scala-lang" % "scala-compiler" % scalaVersion.value,
     // Scala 2.10 contains parser combinators
     // "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5",
-    "org.scalatest" %% "scalatest"   % "3.2.14"       % "test",
-    "io.prestosql"   % "presto-jdbc" % PRESTO_VERSION % "test"
+    "org.scalatest" %% "scalatest"  % "3.2.16"      % "test",
+    "io.trino"       % "trino-jdbc" % TRINO_VERSION % "test"
   ),
   // sbt plugin settings
   sbtPlugin    := true,
@@ -46,7 +46,7 @@ val buildSettings = Seq(
     scriptedLaunchOpts.value ++
       Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
   },
-  crossSbtVersions := Vector("1.3.8")
+  crossSbtVersions := Vector("1.4.6")
 )
 
 commands += Command.command("bumpPluginVersion") { state =>
@@ -95,8 +95,8 @@ lazy val root: Project =
         pushChanges
       )
     )
-    .aggregate(base, generic, sqlite, presto, td)
-    .dependsOn(base, generic, sqlite, presto, td)
+    .aggregate(base, generic, sqlite, trino, td)
+    .dependsOn(base, generic, sqlite, trino, td)
 
 lazy val base: Project =
   Project(id = "sbt-sql-base", base = file("base"))
@@ -104,7 +104,7 @@ lazy val base: Project =
       buildSettings,
       libraryDependencies ++= Seq(
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
-        "org.wvlet.airframe"     %% "airframe-surface"         % "22.11.0"
+        "org.wvlet.airframe"     %% "airframe-surface"         % "22.11.4"
       ),
       Compile / resourceGenerators += Def.task {
         val buildProp = (Compile / resourceManaged).value / "org" / "xerial" / "sbt" / "sbt-sql" / "build.properties"
@@ -130,17 +130,17 @@ lazy val sqlite: Project =
       buildSettings,
       description := " A sbt plugin for genarting model classes from SQLite SQL files",
       libraryDependencies ++= Seq(
-        "org.xerial" % "sqlite-jdbc" % "3.39.4.0"
+        "org.xerial" % "sqlite-jdbc" % "3.41.2.1"
       )
     ).dependsOn(base)
 
-lazy val presto: Project =
-  Project(id = "sbt-sql-presto", base = file("presto"))
+lazy val trino: Project =
+  Project(id = "sbt-sql-trino", base = file("trino"))
     .settings(
       buildSettings,
-      description := " A sbt plugin for generating model classes from Presto SQL files",
+      description := " A sbt plugin for generating model classes from Trino SQL files",
       libraryDependencies ++= Seq(
-        "io.prestosql" % "presto-jdbc" % PRESTO_VERSION
+        "io.trino" % "trino-jdbc" % TRINO_VERSION
       )
     ).dependsOn(base)
 
@@ -148,9 +148,8 @@ lazy val td: Project =
   Project(id = "sbt-sql-td", base = file("td"))
     .settings(
       buildSettings,
-      description := " A sbt plugin for generating model classes from Treasure Data Presto SQL files",
+      description := " A sbt plugin for generating model classes from Treasure Data SQL files",
       libraryDependencies ++= Seq(
-        "io.prestosql" % "presto-jdbc" % PRESTO_VERSION
+        "io.trino" % "trino-jdbc" % TRINO_VERSION
       )
-    )
-    .dependsOn(base)
+    ).dependsOn(base)
