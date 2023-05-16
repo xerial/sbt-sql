@@ -32,15 +32,12 @@ val buildSettings = Seq(
   parallelExecution      := true,
   scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
   libraryDependencies ++= Seq(
-    "org.xerial"    %% "xerial-lens"    % "3.6.0",
     "org.scala-lang" % "scala-compiler" % scalaVersion.value,
     // Scala 2.10 contains parser combinators
     // "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5",
     "org.scalatest" %% "scalatest"  % "3.2.16"      % "test",
     "io.trino"       % "trino-jdbc" % TRINO_VERSION % "test"
   ),
-  // Ignore binary incompatible errors for libraries using scala-xml.
-  ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-parser-combinators" % "always",
   // sbt plugin settings
   sbtPlugin    := true,
   scalaVersion := SCALA_2_12,
@@ -106,7 +103,7 @@ lazy val base: Project =
       buildSettings,
       libraryDependencies ++= Seq(
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
-        "org.wvlet.airframe"     %% "airframe-surface"         % "22.12.6"
+        "org.wvlet.airframe"     %% "airframe-surface"         % "23.5.3"
       ),
       Compile / resourceGenerators += Def.task {
         val buildProp = (Compile / resourceManaged).value / "org" / "xerial" / "sbt" / "sbt-sql" / "build.properties"

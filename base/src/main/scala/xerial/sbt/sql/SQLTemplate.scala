@@ -1,8 +1,8 @@
 package xerial.sbt.sql
 
-import xerial.core.log.Logger
+import wvlet.log.LogSupport
 
-object SQLTemplate extends Logger {
+object SQLTemplate extends LogSupport {
   sealed trait Fragment
   case class Text(s: String)                       extends Fragment
   case class Param(name: String, typeName: String) extends Fragment
