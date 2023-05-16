@@ -39,6 +39,8 @@ val buildSettings = Seq(
     "org.scalatest" %% "scalatest"  % "3.2.16"      % "test",
     "io.trino"       % "trino-jdbc" % TRINO_VERSION % "test"
   ),
+  // Ignore binary incompatible errors for libraries using scala-xml.
+  ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-parser-combinators" % "always",
   // sbt plugin settings
   sbtPlugin    := true,
   scalaVersion := SCALA_2_12,
