@@ -1,6 +1,6 @@
 import ReleaseTransformations._
 
-val TRINO_VERSION                   = "351"
+val TRINO_VERSION                   = "417"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 
 val SCALA_2_12 = "2.12.17"
