@@ -1,7 +1,8 @@
 package xerial.sbt.sql
 
+import wvlet.airframe.surface.{Surface, Zero}
+import wvlet.airframe.surface.reflect.{ReflectSurfaceFactory, ReflectTypeUtil}
 import wvlet.log.LogSupport
-import xerial.lens.TypeUtil
 
 import scala.util.{Failure, Success, Try}
 
@@ -30,7 +31,7 @@ object SQLTemplateCompiler extends LogSupport {
           case _ => null
         }
       case _ =>
-        Try(TypeUtil.zero(Class.forName(typeName))).getOrElse(null)
+        Try(Zero.zeroOf(ReflectSurfaceFactory.ofClass(Class.forName(typeName)))).toOption.getOrElse(null)
     }
 
   def compile(sqlTemplate: String): SQLTemplate = {

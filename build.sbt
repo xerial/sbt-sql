@@ -1,7 +1,7 @@
 import ReleaseTransformations._
 
 val TRINO_VERSION                   = "417"
-val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
+val SCALA_PARSER_COMBINATOR_VERSION = "2.3.0"
 
 val SCALA_2_12 = "2.12.17"
 ThisBuild / scalaVersion := SCALA_2_12
@@ -32,7 +32,6 @@ val buildSettings = Seq(
   parallelExecution      := true,
   scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
   libraryDependencies ++= Seq(
-    "org.xerial"    %% "xerial-lens"    % "3.6.0",
     "org.scala-lang" % "scala-compiler" % scalaVersion.value,
     // Scala 2.10 contains parser combinators
     // "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5",
