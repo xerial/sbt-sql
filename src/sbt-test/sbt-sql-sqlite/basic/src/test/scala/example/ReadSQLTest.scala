@@ -4,9 +4,10 @@ import java.sql.DriverManager
 
 object ReadSQLTest extends wvlet.airspec.AirSpec {
 
-  Class.forName("org.sqlite.JDBC")
-
-  implicit val connection = DriverManager.getConnection("jdbc:sqlite::memory:")
+  private implicit lazy val connection = {
+    Class.forName("org.sqlite.JDBC")
+    DriverManager.getConnection("jdbc:sqlite::memory:")
+  }
 
   private def execute(sql: String): Unit = {
     val stmt = connection.createStatement()
