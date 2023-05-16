@@ -24,7 +24,7 @@ class SQLModelClassGeneratorTest extends Spec {
       )
       g.generate(
         GeneratorConfig(
-          new File("base/src/test/sql/trinoo"),
+          new File("base/src/test/sql/trino"),
           new File("target/sbt-1.0/src_managed/test")
         )
       )
