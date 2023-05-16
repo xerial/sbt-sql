@@ -1,5 +1,3 @@
-import ReleaseTransformations._
-
 val TRINO_VERSION                   = "417"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.3.0"
 
@@ -75,24 +73,7 @@ lazy val root: Project =
       publish           := {},
       publishLocal      := {},
       publishArtifact   := false,
-      test              := {},
-      releaseTagName    := { (ThisBuild / version).value },
-      releaseCrossBuild := true,
-      releaseProcess := Seq[ReleaseStep](
-        checkSnapshotDependencies,
-        inquireVersions,
-        runClean,
-        runTest,
-        releaseStepCommandAndRemaining("scripted"),
-        setReleaseVersion,
-        commitReleaseVersion,
-        tagRelease,
-        releaseStepCommandAndRemaining("publishSigned"),
-        releaseStepCommand("sonatypeBundleRelease"),
-        setNextVersion,
-        commitNextVersion,
-        pushChanges
-      )
+      test              := {}
     )
     .aggregate(base, generic, sqlite, trino, td)
     .dependsOn(base, generic, sqlite, trino, td)
