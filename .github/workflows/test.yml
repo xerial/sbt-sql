@@ -6,6 +6,7 @@ on:
       - '**.scala'
       - '**.java'
       - '**.sbt'
+      - 'project/build.properties'
   push:
     branches:
       - master
@@ -13,6 +14,7 @@ on:
       - '**.scala'
       - '**.java'
       - '**.sbt'
+      - 'project/build.properties'
 
 jobs:
   code_format:
