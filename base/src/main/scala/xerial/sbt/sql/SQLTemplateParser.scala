@@ -100,7 +100,8 @@ object SQLTemplateParser extends LogSupport {
     override def skipWhitespace = true
 
     def str: Parser[String]          = stringLiteral ^^ { x => x.substring(1, x.length - 1) }
-    def value: Parser[String]        = ident | str | decimalNumber | wholeNumber | floatingPointNumber
+    def value: Parser[String]        = ident | str | longLiteral | decimalNumber | floatingPointNumber
+    def longLiteral: Parser[String]  = """-?[\d_]+L?""".r
     def defaultValue: Parser[String] = "=" ~ value ^^ { case _ ~ v => v }
     def arg: Parser[FunctionArg] =
       ident ~ ":" ~ typeName ~ opt(defaultValue) ^^ { case n ~ _ ~ t ~ opt => FunctionArg(n, t, opt) }
