@@ -26,6 +26,8 @@ select
     '101010'::BIT p_bit,
     interval 1 year p_interval,
     [1, 2, 3] p_int_list,
+    ['a', 'b'] p_varchar_list,
+    [true, false] p_boolean_list,
     -- STRUCT
     -- ENUM
     uuid() p_uuid,
