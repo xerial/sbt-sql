@@ -37,9 +37,9 @@ object JDBCTypeNameParser extends RegexParsers with LogSupport {
     }
 
   private def arrayType: Parser[ArrayType] =
-    "array" ~ "(" ~ dataType ~ ")" ^^ { case _ ~ _ ~ x ~ _ =>
-      ArrayType(x)
-    }
+    "array" ~ "(" ~ dataType ~ ")" ^^ { case _ ~ _ ~ x ~ _ => ArrayType(x) }
+//      // For DuckDB  types
+//      dataType ~ "[]" ^^ { case x ~ _ => ArrayType(x) }
 
   private def mapType: Parser[DataType] =
     "map" ~ "(" ~ dataType ~ "," ~ dataType ~ ")" ^^ { case _ ~ _ ~ k ~ _ ~ v ~ _ =>
@@ -82,17 +82,27 @@ object JDBCTypeNameParser extends RegexParsers with LogSupport {
 
   private def toScalaPrimitiveType(typeName: String): DataType = {
     typeName match {
-      case "bit" | "boolean"              => BooleanType
-      case "tinyint"                      => ByteType
-      case "smallint"                     => ShortType
-      case "integer"                      => IntType
-      case "bigint" | "long"              => LongType
-      case "float" | "real"               => FloatType
-      case "double"                       => DoubleType
-      case "date"                         => DateType
-      case "json"                         => StringType
-      case "char"                         => StringType
-      case "numeric" | "decimal"          => StringType // TODO
+      case "bit" | "boolean"     => BooleanType
+      case "tinyint"             => ByteType
+      case "smallint"            => ShortType
+      case "integer"             => IntType
+      case "bigint" | "long"     => LongType
+      case "float" | "real"      => FloatType
+      case "double"              => DoubleType
+      case "date"                => DateType
+      case "json"                => StringType
+      case "char"                => StringType
+      case "numeric" | "decimal" => StringType // TODO
+      // DuckDB types
+      case "utinyint" | "usmallint" | "int1" | "int2" | "int4" | "int" | "signed" => IntType
+      case "int8" | "uinteger"                                                    => LongType
+      // DuckDB uses "hugeint" for 128-bit integers
+      case "hugeint" | "int32" | "ubigint" => LongType
+      // BigInt should be used, but it is not supported now
+      case "int64" | "int128"             => LongType
+      case "float4" | "float8"            => FloatType
+      case "float8"                       => DoubleType
+      case "blob" | "bytea"               => BinaryType
       case t if t.startsWith("interval ") => StringType
       case "time" | "time with time zone" =>
         // Return string to be compatible with TD API
