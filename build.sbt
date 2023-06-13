@@ -75,8 +75,8 @@ lazy val root: Project =
       publishArtifact   := false,
       test              := {}
     )
-    .aggregate(base, generic, sqlite, trino, td)
-    .dependsOn(base, generic, sqlite, trino, td)
+    .aggregate(base, generic, sqlite, duckdb, trino, td)
+    .dependsOn(base, generic, sqlite, duckdb, trino, td)
 
 lazy val base: Project =
   Project(id = "sbt-sql-base", base = file("base"))
@@ -97,27 +97,46 @@ lazy val base: Project =
       }.taskValue
     )
 
-lazy val generic: Project =
-  Project(id = "sbt-sql", base = file("generic"))
+lazy val generic: Project = {
+  project
+    .in(file("generic"))
     .settings(
       buildSettings,
+      name        := "sbt-sql",
       description := " A sbt plugin for generating model classes from SQL files"
     ).dependsOn(base)
+}
 
 lazy val sqlite: Project =
-  Project(id = "sbt-sql-sqlite", base = file("sqlite"))
+  project
+    .in(file("sqlite"))
     .settings(
       buildSettings,
+      name        := "sbt-sql-sqlite",
       description := " A sbt plugin for genarting model classes from SQLite SQL files",
       libraryDependencies ++= Seq(
         "org.xerial" % "sqlite-jdbc" % "3.42.0.0"
       )
     ).dependsOn(base)
 
-lazy val trino: Project =
-  Project(id = "sbt-sql-trino", base = file("trino"))
+lazy val duckdb: Project =
+  project
+    .in(file("duckdb"))
     .settings(
       buildSettings,
+      name        := "sbt-sql-duckdb",
+      description := " A sbt plugin for genarting model classes from DuckDB SQL files",
+      libraryDependencies ++= Seq(
+        "org.duckdb" % "duckdb_jdbc" % "0.8.0"
+      )
+    ).dependsOn(base)
+
+lazy val trino: Project =
+  project
+    .in(file("trino"))
+    .settings(
+      buildSettings,
+      name        := "sbt-sql-trino",
       description := " A sbt plugin for generating model classes from Trino SQL files",
       libraryDependencies ++= Seq(
         "io.trino" % "trino-jdbc" % TRINO_VERSION
@@ -125,9 +144,11 @@ lazy val trino: Project =
     ).dependsOn(base)
 
 lazy val td: Project =
-  Project(id = "sbt-sql-td", base = file("td"))
+  project
+    .in(file("td"))
     .settings(
       buildSettings,
+      name        := "sbt-sql-td",
       description := " A sbt plugin for generating model classes from Treasure Data SQL files",
       libraryDependencies ++= Seq(
         "io.trino" % "trino-jdbc" % TRINO_VERSION
