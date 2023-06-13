@@ -54,7 +54,7 @@ enablePlugins(SbtSQLJDBC)
 // Add your JDBC driver to the dependency
 // For using trino-jdbc
 libraryDependencies ++= Seq(
-  "org.wvlet.airframe" % "airframe-codec" % "21.1.0", // Necessary for mapping JDBC ResultSets to model classes
+  "org.wvlet.airframe" %% "airframe-codec" % "(airframe version)", // Necessary for mapping JDBC ResultSets to model classes
   "io.trino" % "trino-jdbc" % "332"
  )
 
