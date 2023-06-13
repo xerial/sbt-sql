@@ -38,8 +38,8 @@ addSbtPlugin("org.xerial.sbt" % "sbt-sql-td" % "(version)")
 addSbtPlugin("org.xerial.sbt" % "sbt-sql" % "(version)")
 // Add your jdbc driver dependency for checking the result schema
 libraryDependencies ++= Seq(
-   // airframe-codec
-   "org.wvlet.airframe" %% "airframe-codec" % "(version)"
+   // Add airframe-codec for mapping JDBC data to Scala objects
+   "org.wvlet.airframe" %% "airframe-codec" % "(airframe version)"
    // Add your jdbc driver here
 )
 ```
