@@ -75,8 +75,8 @@ lazy val root: Project =
       publishArtifact   := false,
       test              := {}
     )
-    .aggregate(base, generic, sqlite, trino, td)
-    .dependsOn(base, generic, sqlite, trino, td)
+    .aggregate(base, generic, sqlite, duckdb, trino, td)
+    .dependsOn(base, generic, sqlite, duckdb, trino, td)
 
 lazy val base: Project =
   Project(id = "sbt-sql-base", base = file("base"))
@@ -111,6 +111,16 @@ lazy val sqlite: Project =
       description := " A sbt plugin for genarting model classes from SQLite SQL files",
       libraryDependencies ++= Seq(
         "org.xerial" % "sqlite-jdbc" % "3.42.0.0"
+      )
+    ).dependsOn(base)
+
+lazy val duckdb: Project =
+  Project(id = "sbt-sql-duckdb", base = file("duckdb"))
+    .settings(
+      buildSettings,
+      description := " A sbt plugin for genarting model classes from DuckDB SQL files",
+      libraryDependencies ++= Seq(
+        "org.duckdb" % "duckdb_jdbc" % "0.8.0"
       )
     ).dependsOn(base)
 
