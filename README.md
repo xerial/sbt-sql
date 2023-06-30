@@ -1,7 +1,7 @@
 sbt-sql
 ====
 
-A sbt plugin for generating model classes from SQL query files in `src/main/sql`.
+A sbt plugin for using SQL queries in `src/main/sql` and mapping query results to model classes in Scala.
 
 ## Why you need sbt-sql?
 
