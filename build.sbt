@@ -33,7 +33,7 @@ val buildSettings = Seq(
     "org.scala-lang" % "scala-compiler" % scalaVersion.value,
     // Scala 2.10 contains parser combinators
     // "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5",
-    "org.scalatest" %% "scalatest"  % "3.2.16"      % "test",
+    "org.scalatest" %% "scalatest"  % "3.2.17"      % "test",
     "io.trino"       % "trino-jdbc" % TRINO_VERSION % "test"
   ),
   // sbt plugin settings
