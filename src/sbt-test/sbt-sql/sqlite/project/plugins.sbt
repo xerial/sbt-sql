@@ -5,5 +5,5 @@ sys.props.get("plugin.version") match {
 }
 // Add your jdbc driver dependency for checking the result schema
 libraryDependencies ++= Seq(
-  "org.xerial" % "sqlite-jdbc" % "3.43.0.0"
+  "org.xerial" % "sqlite-jdbc" % "3.43.2.0"
 )
