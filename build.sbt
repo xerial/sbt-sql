@@ -84,7 +84,7 @@ lazy val base: Project =
       buildSettings,
       libraryDependencies ++= Seq(
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
-        "org.wvlet.airframe"     %% "airframe-surface"         % "24.6.0"
+        "org.wvlet.airframe"     %% "airframe-surface"         % "24.6.1"
       ),
       Compile / resourceGenerators += Def.task {
         val buildProp = (Compile / resourceManaged).value / "org" / "xerial" / "sbt" / "sbt-sql" / "build.properties"
