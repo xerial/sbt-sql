@@ -1,7 +1,7 @@
 val TRINO_VERSION                   = "455"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.4.0"
 
-val SCALA_2_12 = "2.12.19"
+val SCALA_2_12 = "2.12.20"
 ThisBuild / scalaVersion := SCALA_2_12
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
