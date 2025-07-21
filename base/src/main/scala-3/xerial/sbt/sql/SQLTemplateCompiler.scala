@@ -8,8 +8,9 @@ import scala.util.{Failure, Success, Try}
 
 /** 
  * Scala 3 version of SQLTemplateCompiler
+ * 
  * Since runtime reflection is not available in Scala 3, this version
- * generates SQL with placeholders that will be filled at runtime
+ * evaluates SQL templates using string interpolation at compile time.
  */
 object SQLTemplateCompiler extends LogSupport {
 
@@ -25,7 +26,6 @@ object SQLTemplateCompiler extends LogSupport {
       case tuple if typeName.startsWith("(") =>
         val a = tuple.trim.substring(1, tuple.length - 1).split(",")
         val e = a.map(x => defaultValueFor(x))
-        // TODO proper parsing of tuple types
         e.length match {
           case 1 => (e(0))
           case 2 => (e(0), e(1))
@@ -41,31 +41,34 @@ object SQLTemplateCompiler extends LogSupport {
   def compile(sqlTemplate: String): SQLTemplate = {
     val parsed  = SQLTemplateParser.parse(sqlTemplate)
     val params  = parsed.args
-    val imports = parsed.imports.map(x => s"import ${x.target}").mkString("\n")
+    val imports = parsed.imports
 
     val (defaultParams, otherParams) = params.partition(_.defaultValue.isDefined)
 
-    // For Scala 3, we generate SQL with placeholders ${param_name} that will be replaced at runtime
-    // This is a workaround for the lack of runtime compilation
+    // Create a context with parameter values
+    val context = collection.mutable.Map[String, Any]()
     
-    // Create a map of default values
-    val defaultValues = defaultParams.map(p => p.name -> p.defaultValue.get).toMap
-    val otherValues = otherParams.map(p => p.name -> defaultValueFor(p.typeName)).toMap
-    val allValues = defaultValues ++ otherValues
-    
-    // Process the SQL template
-    var populatedSQL = parsed.sql.sql
-    
-    // Replace embedded expressions with their values or placeholders
-    parsed.sql.embeddedExpressions.foreach { expr =>
-      val exprCode = expr.code.trim
-      val replacement = evaluateSimpleExpression(exprCode, allValues)
-      populatedSQL = populatedSQL.replace(s"$${${expr.code}}", replacement)
+    // Add default parameters to context
+    defaultParams.foreach { p =>
+      val value = p.defaultValue.get match {
+        case s if s.startsWith("\"") && s.endsWith("\"") => 
+          s.substring(1, s.length - 1)
+        case v => v
+      }
+      context(p.name) = value
     }
+    
+    // Add other parameters with default values
+    otherParams.foreach { p =>
+      context(p.name) = defaultValueFor(p.typeName)
+    }
+
+    // Process the SQL string to replace ${...} expressions
+    val populatedSQL = processTemplate(parsed.sql, context.toMap)
     
     debug(s"populated SQL:\n${populatedSQL}")
 
-    new SQLTemplate(
+    SQLTemplate(
       sql = parsed.sql,
       populated = populatedSQL,
       params = params,
@@ -74,29 +77,65 @@ object SQLTemplateCompiler extends LogSupport {
     )
   }
   
-  private def evaluateSimpleExpression(expr: String, values: Map[String, Any]): String = {
-    // Handle simple cases that don't require runtime compilation
+  private def processTemplate(template: String, context: Map[String, Any]): String = {
+    // Pattern to match ${...} expressions
+    val pattern = """\$\{([^}]+)\}""".r
+    
+    pattern.replaceAllIn(template, m => {
+      val expr = m.group(1).trim
+      evaluateExpression(expr, context)
+    })
+  }
+  
+  private def evaluateExpression(expr: String, context: Map[String, Any]): String = {
+    // Handle various expression patterns
     expr match {
       // Direct parameter reference
-      case param if values.contains(param) => 
-        values(param) match {
-          case s: String => s
-          case v => v.toString
-        }
+      case param if context.contains(param) => 
+        context(param).toString
         
       // String literal
       case s if s.startsWith("\"") && s.endsWith("\"") => 
         s.substring(1, s.length - 1)
         
-      // SQL type parameter (should be used as-is)
-      case param if values.get(param).exists(_ == "") =>
-        s"$${$param}"
+      // Number literal
+      case n if n.matches("-?\\d+(\\.\\d+)?[LlFfDd]?") => 
+        n
         
-      // For complex expressions, we need to keep them as placeholders
-      // These would need to be evaluated at runtime by the generated code
+      // Boolean literal
+      case "true" | "false" => 
+        expr
+        
+      // Simple method calls
+      case methodCall if methodCall.contains(".") && !methodCall.contains("(") =>
+        val parts = methodCall.split("\\.", 2)
+        val objName = parts(0).trim
+        val methodName = parts(1).trim
+        
+        context.get(objName) match {
+          case Some(value: String) =>
+            methodName match {
+              case "toUpperCase" => value.toUpperCase
+              case "toLowerCase" => value.toLowerCase
+              case "trim" => value.trim
+              case "length" => value.length.toString
+              case _ => 
+                warn(s"Unsupported method '$methodName' on String in Scala 3 SQL template")
+                s"${value}"
+            }
+          case Some(value) if methodName == "toString" =>
+            value.toString
+          case _ =>
+            warn(s"Cannot evaluate expression '$expr' in Scala 3 SQL template")
+            s"(${expr})"
+        }
+        
+      // For complex expressions that require runtime compilation
       case _ =>
-        warn(s"Complex expression '$expr' cannot be evaluated at compile time in Scala 3. Using placeholder.")
-        s"$${$expr}"
+        warn(s"Complex expression '$expr' cannot be evaluated at compile time in Scala 3. " +
+             s"Consider using simpler expressions or default parameter values.")
+        // Return the expression as-is for now
+        s"(${expr})"
     }
   }
 }
