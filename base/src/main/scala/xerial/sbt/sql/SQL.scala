@@ -1,7 +1,7 @@
 package xerial.sbt.sql
 
 import sbt.Keys._
-import sbt._
+import sbt.{ given, * }
 import sbt.internal.io.Source
 
 /** */

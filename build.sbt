@@ -2,7 +2,17 @@ val TRINO_VERSION                   = "476"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.4.0"
 
 val SCALA_2_12 = "2.12.20"
-ThisBuild / scalaVersion := SCALA_2_12
+val SCALA_3 = "3.6.4"
+ThisBuild / scalaVersion := SCALA_3
+
+ThisBuild / pluginCrossBuild / sbtVersion := {
+  scalaBinaryVersion.value match {
+    case "2.12" =>
+      (pluginCrossBuild / sbtVersion).value
+    case _ =>
+      "2.0.0-M4"
+  }
+}
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -33,7 +43,6 @@ val buildSettings = Seq(
   parallelExecution      := true,
   scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
   libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-compiler" % scalaVersion.value,
     // Scala 2.10 contains parser combinators
     // "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5",
     "org.scalatest" %% "scalatest"  % "3.2.19"      % "test",
@@ -41,12 +50,12 @@ val buildSettings = Seq(
   ),
   // sbt plugin settings
   sbtPlugin    := true,
-  scalaVersion := SCALA_2_12,
+  scalaVersion := SCALA_3,
   scriptedLaunchOpts := {
     scriptedLaunchOpts.value ++
       Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
   },
-  crossSbtVersions := Vector("1.4.6")
+  crossSbtVersions := Vector("1.10.6", "2.0.0-M4")
 )
 
 commands += Command.command("bumpPluginVersion") { state =>
