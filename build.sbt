@@ -48,6 +48,14 @@ val buildSettings = Seq(
   ),
   // sbt plugin settings
   sbtPlugin    := true,
+  pluginCrossBuild / sbtVersion := {
+    scalaBinaryVersion.value match {
+      case "2.12" =>
+        (pluginCrossBuild / sbtVersion).value
+      case _ =>
+        "2.0.0-M4"
+    }
+  },
   scriptedLaunchOpts := {
     scriptedLaunchOpts.value ++
       Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
