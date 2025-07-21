@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  publish_jvm:
+  publish:
     name: Publish
     runs-on: ubuntu-latest
     steps:
