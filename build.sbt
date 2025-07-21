@@ -7,7 +7,7 @@ ThisBuild / scalaVersion := SCALA_2_12
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val buildSettings = Seq(
-  organization        := "org.xerial.sbt",
+  organization := "org.xerial.sbt",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://github.com/xerial/sbt-sql")),
   scmInfo := Some(
@@ -118,7 +118,7 @@ lazy val sqlite: Project =
       name        := "sbt-sql-sqlite",
       description := " A sbt plugin for genarting model classes from SQLite SQL files",
       libraryDependencies ++= Seq(
-        "org.xerial" % "sqlite-jdbc" % "3.50.2.0"
+        "org.xerial" % "sqlite-jdbc" % "3.50.3.0"
       )
     ).dependsOn(base)
 
