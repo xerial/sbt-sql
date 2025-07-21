@@ -4,7 +4,7 @@ val SCALA_PARSER_COMBINATOR_VERSION = "2.4.0"
 val SCALA_2_12 = "2.12.20"
 val SCALA_3 = "3.6.4"
 ThisBuild / scalaVersion := SCALA_2_12
-
+ThisBuild / crossScalaVersions := Seq(SCALA_2_12, SCALA_3)
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
