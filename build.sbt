@@ -8,7 +8,6 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val buildSettings = Seq(
   organization        := "org.xerial.sbt",
-  sonatypeProfileName := "org.xerial",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://github.com/xerial/sbt-sql")),
   scmInfo := Some(
@@ -20,13 +19,26 @@ val buildSettings = Seq(
   developers := List(
     Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
   ),
-  publishTo              := sonatypePublishToBundle.value,
+  publishTo := {
+    val centralPortal = "https://central.sonatype.com/api/v1/publisher"
+    if (isSnapshot.value) {
+      Some("snapshots".at(s"$centralPortal/uploads/bundle"))
+    } else {
+      Some("releases".at(centralPortal))
+    }
+  },
   organizationName       := "Xerial project",
   organizationHomepage   := Some(new URL("https://xerial.org/")),
   description            := "A sbt plugin for generating model classes from SQL files",
   publishMavenStyle      := true,
   Test / publishArtifact := false,
   pomIncludeRepository   := { _ => false },
+  credentials ++= {
+    for {
+      username <- sys.env.get("SONATYPE_USERNAME")
+      password <- sys.env.get("SONATYPE_PASSWORD")
+    } yield Credentials("Sonatype Nexus Repository Manager", "central.sonatype.com", username, password)
+  }.toSeq,
   parallelExecution      := true,
   scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
   libraryDependencies ++= Seq(
