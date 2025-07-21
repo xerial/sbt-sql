@@ -37,13 +37,14 @@ jobs:
   test_sbt_plugin:
     name: sbt scripted tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        scala-version: ['2.12', '3']
     steps:
       - uses: actions/checkout@v4
       - uses: olafurpg/setup-scala@v14
         with:
           java-version: openjdk@1.11
-      - name: build plugins
-        run: ./sbt publishLocal
       - name: sbt scripted test
         # Skip sbt-sql-td test
-        run: ./sbt "scripted sbt-sql/* sbt-sql-sqlite/*"
+        run: ./sbt "++ ${{ matrix.scala-version }}" "scripted sbt-sql/* sbt-sql-sqlite/*"
