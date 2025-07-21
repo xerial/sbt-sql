@@ -20,12 +20,9 @@ val buildSettings = Seq(
     Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
   ),
   publishTo := {
-    val centralPortal = "https://central.sonatype.com/api/v1/publisher"
-    if (isSnapshot.value) {
-      Some("snapshots".at(s"$centralPortal/uploads/bundle"))
-    } else {
-      Some("releases".at(centralPortal))
-    }
+    val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
+    if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)
+    else localStaging.value
   },
   organizationName       := "Xerial project",
   organizationHomepage   := Some(new URL("https://xerial.org/")),
