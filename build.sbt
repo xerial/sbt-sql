@@ -3,16 +3,8 @@ val SCALA_PARSER_COMBINATOR_VERSION = "2.4.0"
 
 val SCALA_2_12 = "2.12.20"
 val SCALA_3 = "3.6.4"
-ThisBuild / scalaVersion := SCALA_3
+ThisBuild / scalaVersion := SCALA_2_12
 
-ThisBuild / pluginCrossBuild / sbtVersion := {
-  scalaBinaryVersion.value match {
-    case "2.12" =>
-      (pluginCrossBuild / sbtVersion).value
-    case _ =>
-      "2.0.0-M4"
-  }
-}
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -50,12 +42,10 @@ val buildSettings = Seq(
   ),
   // sbt plugin settings
   sbtPlugin    := true,
-  scalaVersion := SCALA_3,
   scriptedLaunchOpts := {
     scriptedLaunchOpts.value ++
       Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
-  },
-  crossSbtVersions := Vector("1.10.6", "2.0.0-M4")
+  }
 )
 
 commands += Command.command("bumpPluginVersion") { state =>
