@@ -2,7 +2,15 @@ val TRINO_VERSION                   = "476"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.4.0"
 
 val SCALA_2_12 = "2.12.20"
+val SCALA_3 = "3.6.4"
 ThisBuild / scalaVersion := SCALA_2_12
+ThisBuild / crossScalaVersions := Seq(SCALA_2_12, SCALA_3)
+
+// Resolve cross-version conflicts
+ThisBuild / libraryDependencySchemes ++= Seq(
+  "org.scala-lang.modules" %% "scala-parser-combinators" % VersionScheme.Always,
+  "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
+)
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -33,7 +41,6 @@ val buildSettings = Seq(
   parallelExecution      := true,
   scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
   libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-compiler" % scalaVersion.value,
     // Scala 2.10 contains parser combinators
     // "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5",
     "org.scalatest" %% "scalatest"  % "3.2.19"      % "test",
@@ -41,12 +48,18 @@ val buildSettings = Seq(
   ),
   // sbt plugin settings
   sbtPlugin    := true,
-  scalaVersion := SCALA_2_12,
+  pluginCrossBuild / sbtVersion := {
+    scalaBinaryVersion.value match {
+      case "2.12" =>
+        (pluginCrossBuild / sbtVersion).value
+      case _ =>
+        "2.0.0-M4"
+    }
+  },
   scriptedLaunchOpts := {
     scriptedLaunchOpts.value ++
       Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
-  },
-  crossSbtVersions := Vector("1.4.6")
+  }
 )
 
 commands += Command.command("bumpPluginVersion") { state =>
@@ -128,7 +141,7 @@ lazy val duckdb: Project =
     .settings(
       buildSettings,
       name        := "sbt-sql-duckdb",
-      description := " A sbt plugin for genarting model classes from DuckDB SQL files",
+      description := " A sbt plugin for generating model classes from DuckDB SQL files",
       libraryDependencies ++= Seq(
         "org.duckdb" % "duckdb_jdbc" % "1.3.2.0"
       )
