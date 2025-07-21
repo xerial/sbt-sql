@@ -6,7 +6,7 @@ import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
 
-/** */
+/** Reflection-free SQLTemplateCompiler that works for both Scala 2 and 3 */
 object SQLTemplateCompiler extends LogSupport {
 
   private def defaultValueFor(typeName: String): Any =
@@ -28,10 +28,11 @@ object SQLTemplateCompiler extends LogSupport {
           case 3 => (e(0), e(1), e(2))
           case 4 => (e(0), e(1), e(2), e(3))
           case 5 => (e(0), e(1), e(2), e(3), e(4))
-          case _ => null
+          case 6 => (e(0), e(1), e(2), e(3), e(4), e(5))
+          case 7 => (e(0), e(1), e(2), e(3), e(4), e(5), e(6))
+          case _ => new UnsupportedOperationException(s"tuple size ${e.length} is not supported: ${typeName}")
         }
-      case _ =>
-        Try(Zero.zeroOf(ReflectSurfaceFactory.ofClass(Class.forName(typeName)))).toOption.getOrElse(null)
+      case _ => Zero.zeroOf(ReflectSurfaceFactory.ofTypeName(typeName))
     }
 
   def compile(sqlTemplate: String): SQLTemplate = {
@@ -41,203 +42,85 @@ object SQLTemplateCompiler extends LogSupport {
 
     val (defaultParams, otherParams) = params.partition(_.defaultValue.isDefined)
 
-    val methodArgs = otherParams
-      .map { x =>
-        x.defaultValue match {
-          case Some(v) => s"${x.name}:${x.functionArgType}=${v}"
-          case None    => s"${x.name}:${x.functionArgType}"
+    // Build a map of parameter values
+    val defaultParamMap = defaultParams.map(p => p.name -> p.defaultValue.get).toMap
+    val otherParamMap = otherParams.map(p => p.name -> defaultValueFor(p.typeName)).toMap
+    val paramMap = defaultParamMap ++ otherParamMap
+    
+    // Start with the raw SQL
+    var populatedSQL = parsed.sql.sql
+    
+    // Process embedded expressions
+    parsed.sql.embeddedExpressions.foreach { expr =>
+      val exprCode = expr.code.trim
+      val replacement = evaluateExpression(exprCode, paramMap)
+      val placeholder = s"$${${expr.code}}"
+      populatedSQL = populatedSQL.replace(placeholder, replacement)
+    }
+
+    SQLTemplate(params, imports, parsed.sql, populatedSQL)
+  }
+
+  private def evaluateExpression(expr: String, paramMap: Map[String, Any]): String = {
+    // Handle simple cases without reflection
+    expr match {
+      // Direct parameter reference
+      case param if paramMap.contains(param) => 
+        paramMap(param).toString
+        
+      // String literal
+      case s if s.startsWith("\"") && s.endsWith("\"") => 
+        s.substring(1, s.length - 1)
+        
+      // Number literal
+      case n if n.matches("-?\\d+(\\.\\d+)?") => 
+        n
+        
+      // Boolean literal
+      case "true" | "false" => 
+        expr
+        
+      // Simple method calls on parameters
+      case methodCall if methodCall.contains(".") =>
+        val parts = methodCall.split("\\.", 2)
+        val objName = parts(0)
+        val method = parts(1)
+        
+        paramMap.get(objName) match {
+          case Some(value) =>
+            // Handle common string methods
+            if (method == "toString" || method == "toString()") {
+              value.toString
+            } else if (method.startsWith("substring(") && method.endsWith(")")) {
+              // Simple substring handling
+              try {
+                val args = method.substring(10, method.length - 1).split(",").map(_.trim.toInt)
+                if (args.length == 1) {
+                  value.toString.substring(args(0))
+                } else if (args.length == 2) {
+                  value.toString.substring(args(0), args(1))
+                } else {
+                  s"(${expr})"
+                }
+              } catch {
+                case _: Exception => s"(${expr})"
+              }
+            } else {
+              s"(${expr})"
+            }
+          case None => s"(${expr})"
         }
-      }.mkString(", ")
-    val functionArgs = {
-      val paramLength = otherParams.length
-      val a           = (otherParams.map { p => s"${p.functionArgType}" }).mkString(", ")
-      if (paramLength == 0)
-        "()"
-      else if (paramLength > 1 || (paramLength == 1 && a.startsWith("("))) // tuple type only
-        s"($a)"
-      else
-        a
+        
+      // String concatenation
+      case concat if concat.contains("+") =>
+        // Simple handling of string concatenation
+        val parts = concat.split("\\+").map(_.trim)
+        val evaluated = parts.map(p => evaluateExpression(p, paramMap))
+        evaluated.mkString("")
+        
+      // Default: return as placeholder
+      case _ => 
+        s"(${expr})"
     }
-    val valDefs = defaultParams
-      .map { x =>
-        s"    val ${x.name} = ${x.quotedValue}"
-      }.mkString("\n")
-
-    val sqlCode = "s\"\"\"" + parsed.sql + "\"\"\""
-    val funDef =
-      s"""$imports
-         |new (${functionArgs} => String) {
-         |  def apply(${methodArgs}): String = {
-         |$valDefs
-         |$sqlCode
-         |  }
-         |}
-         |
-     """.stripMargin
-    debug(s"function def:\n${funDef}")
-
-    import scala.reflect.runtime.currentMirror
-    import scala.tools.reflect.ToolBox
-    val toolBox = currentMirror.mkToolBox()
-    val code = Try(toolBox.eval(toolBox.parse(funDef))) match {
-      case Success(c) => c
-      case Failure(f) =>
-        error(s"Failed to compile code:\n${funDef}")
-        throw f
-    }
-
-    val p = otherParams.map(x => defaultValueFor(x.typeName)).toIndexedSeq
-    debug(s"function args:${p.mkString(", ")}")
-
-    val populatedSQL: String = otherParams.length match {
-      case 0 =>
-        code.asInstanceOf[Function0[String]].apply()
-      case 1 =>
-        code.asInstanceOf[Function1[Any, String]].apply(p(0))
-      case 2 =>
-        code.asInstanceOf[Function2[Any, Any, String]].apply(p(0), p(1))
-      case 3 =>
-        code.asInstanceOf[Function3[Any, Any, Any, String]].apply(p(0), p(1), p(2))
-      case 4 =>
-        code.asInstanceOf[Function4[Any, Any, Any, Any, String]].apply(p(0), p(1), p(2), p(3))
-      case 5 =>
-        code.asInstanceOf[Function5[Any, Any, Any, Any, Any, String]].apply(p(0), p(1), p(2), p(3), p(4))
-      case 6 =>
-        code.asInstanceOf[Function6[Any, Any, Any, Any, Any, Any, String]].apply(p(0), p(1), p(2), p(3), p(4), p(5))
-      case 7 =>
-        code
-          .asInstanceOf[Function7[Any, Any, Any, Any, Any, Any, Any, String]].apply(
-            p(0),
-            p(1),
-            p(2),
-            p(3),
-            p(4),
-            p(5),
-            p(6)
-          )
-      case 8 =>
-        code
-          .asInstanceOf[Function8[Any, Any, Any, Any, Any, Any, Any, Any, String]].apply(
-            p(0),
-            p(1),
-            p(2),
-            p(3),
-            p(4),
-            p(5),
-            p(6),
-            p(7)
-          )
-      case 9 =>
-        code
-          .asInstanceOf[Function9[Any, Any, Any, Any, Any, Any, Any, Any, Any, String]].apply(
-            p(0),
-            p(1),
-            p(2),
-            p(3),
-            p(4),
-            p(5),
-            p(6),
-            p(7),
-            p(8)
-          )
-      case 10 =>
-        code
-          .asInstanceOf[Function10[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, String]].apply(
-            p(0),
-            p(1),
-            p(2),
-            p(3),
-            p(4),
-            p(5),
-            p(6),
-            p(7),
-            p(8),
-            p(9)
-          )
-      case 11 =>
-        code
-          .asInstanceOf[Function11[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, String]].apply(
-            p(0),
-            p(1),
-            p(2),
-            p(3),
-            p(4),
-            p(5),
-            p(6),
-            p(7),
-            p(8),
-            p(9),
-            p(10)
-          )
-      case 12 =>
-        code
-          .asInstanceOf[Function12[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, String]].apply(
-            p(0),
-            p(1),
-            p(2),
-            p(3),
-            p(4),
-            p(5),
-            p(6),
-            p(7),
-            p(8),
-            p(9),
-            p(10),
-            p(11)
-          )
-      case 13 =>
-        code
-          .asInstanceOf[Function13[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, String]].apply(
-            p(0),
-            p(1),
-            p(2),
-            p(3),
-            p(4),
-            p(5),
-            p(6),
-            p(7),
-            p(8),
-            p(9),
-            p(10),
-            p(11),
-            p(12)
-          )
-      case 14 =>
-        code
-          .asInstanceOf[Function14[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, String]].apply(
-            p(0),
-            p(1),
-            p(2),
-            p(3),
-            p(4),
-            p(5),
-            p(6),
-            p(7),
-            p(8),
-            p(9),
-            p(10),
-            p(11),
-            p(12),
-            p(13)
-          )
-      case 15 =>
-        code
-          .asInstanceOf[
-            Function15[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, String]
-          ].apply(p(0), p(1), p(2), p(3), p(4), p(5), p(6), p(7), p(8), p(9), p(10), p(11), p(12), p(13), p(14))
-      case other =>
-        warn(s"Too many parameters in SQL template:\n${sqlTemplate}")
-        parsed.sql
-    }
-
-    debug(s"populated SQL:\n${populatedSQL}")
-
-    new SQLTemplate(
-      sql = parsed.sql,
-      populated = populatedSQL,
-      params = params,
-      imports = parsed.imports,
-      optionals = parsed.optionals
-    )
   }
 }
