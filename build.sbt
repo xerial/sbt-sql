@@ -6,6 +6,12 @@ val SCALA_3 = "3.6.4"
 ThisBuild / scalaVersion := SCALA_2_12
 ThisBuild / crossScalaVersions := Seq(SCALA_2_12, SCALA_3)
 
+// Resolve cross-version conflicts
+ThisBuild / libraryDependencySchemes ++= Seq(
+  "org.scala-lang.modules" %% "scala-parser-combinators" % VersionScheme.Always,
+  "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
+)
+
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val buildSettings = Seq(
@@ -127,7 +133,7 @@ lazy val duckdb: Project =
     .settings(
       buildSettings,
       name        := "sbt-sql-duckdb",
-      description := " A sbt plugin for genarting model classes from DuckDB SQL files",
+      description := " A sbt plugin for generating model classes from DuckDB SQL files",
       libraryDependencies ++= Seq(
         "org.duckdb" % "duckdb_jdbc" % "1.3.2.0"
       )
