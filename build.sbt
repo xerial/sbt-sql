@@ -8,7 +8,6 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val buildSettings = Seq(
   organization        := "org.xerial.sbt",
-  sonatypeProfileName := "org.xerial",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://github.com/xerial/sbt-sql")),
   scmInfo := Some(
@@ -20,7 +19,11 @@ val buildSettings = Seq(
   developers := List(
     Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
   ),
-  publishTo              := sonatypePublishToBundle.value,
+  publishTo := {
+    val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
+    if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)
+    else localStaging.value
+  },
   organizationName       := "Xerial project",
   organizationHomepage   := Some(new URL("https://xerial.org/")),
   description            := "A sbt plugin for generating model classes from SQL files",
