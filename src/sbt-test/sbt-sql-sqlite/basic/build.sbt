@@ -1,6 +1,7 @@
 enablePlugins(SbtSQLSQLite)
 
 name    := "sqlite-basic-test"
+scalaVersion := "3.3.6"
 jdbcURL := "jdbc:sqlite:sample.db"
 
 val AIRFRAME_VERSION = "23.5.3"

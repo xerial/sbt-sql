@@ -4,7 +4,7 @@ import java.sql.DriverManager
 
 object ReadSQLTest extends wvlet.airspec.AirSpec {
 
-  private implicit lazy val connection = {
+  private given connection: java.sql.Connection = {
     Class.forName("org.sqlite.JDBC")
     DriverManager.getConnection("jdbc:sqlite::memory:")
   }

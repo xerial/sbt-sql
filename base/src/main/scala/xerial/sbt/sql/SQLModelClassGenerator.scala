@@ -204,25 +204,25 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends LogSupport {
          |    s${embeddedSQL}
          |  }
          |
-         |  def select(${sqlArgList})(implicit conn:java.sql.Connection): Seq[${name}] = {
-         |    selectWith(sql(${paramNames.mkString(", ")}))(conn)
+         |  def select(${sqlArgList})(using conn:java.sql.Connection): Seq[${name}] = {
+         |    selectWith(sql(${paramNames.mkString(", ")}))(using conn)
          |  }
          |
-         |  def selectWith(sql:String)(implicit conn:java.sql.Connection) : Seq[${name}] = {
+         |  def selectWith(sql:String)(using conn:java.sql.Connection) : Seq[${name}] = {
          |    selectStreamWith(sql:String){ it =>
          |      it.toIndexedSeq
-         |    }(conn)
+         |    }(using conn)
          |  }
          |
          |  def selectStream[R](${sqlArgList})
          |    (streamReader: scala.collection.Iterator[${name}] => R)
-         |    (implicit conn:java.sql.Connection) : R = {
-         |    selectStreamWith(sql(${paramNames.mkString(", ")}))(streamReader)(conn)
+         |    (using conn:java.sql.Connection) : R = {
+         |    selectStreamWith(sql(${paramNames.mkString(", ")}))(streamReader)(using conn)
          |  }
          |
          |  def selectStreamWith[R](sql:String)
          |    (streamReader: scala.collection.Iterator[${name}] => R)
-         |    (implicit conn:java.sql.Connection) : R = {
+         |    (using conn:java.sql.Connection) : R = {
          |    withResource(conn.createStatement()) { stmt =>
          |      debug(s"Executing query:\\n$${sql}")
          |      withResource(stmt.executeQuery(sql)) { rs =>
