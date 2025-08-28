@@ -130,7 +130,7 @@ lazy val duckdb: Project =
       name        := "sbt-sql-duckdb",
       description := " A sbt plugin for genarting model classes from DuckDB SQL files",
       libraryDependencies ++= Seq(
-        "org.duckdb" % "duckdb_jdbc" % "1.3.2.0"
+        "org.duckdb" % "duckdb_jdbc" % "1.3.2.1"
       )
     ).dependsOn(base)
 
