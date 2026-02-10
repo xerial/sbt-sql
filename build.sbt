@@ -118,7 +118,7 @@ lazy val sqlite: Project =
       name        := "sbt-sql-sqlite",
       description := " A sbt plugin for genarting model classes from SQLite SQL files",
       libraryDependencies ++= Seq(
-        "org.xerial" % "sqlite-jdbc" % "3.50.3.0"
+        "org.xerial" % "sqlite-jdbc" % "3.51.2.0"
       )
     ).dependsOn(base)
 
