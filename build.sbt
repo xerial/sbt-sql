@@ -10,7 +10,7 @@ val buildSettings = Seq(
   organization := "org.xerial.sbt",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://github.com/xerial/sbt-sql")),
-  scmInfo := Some(
+  scmInfo  := Some(
     ScmInfo(
       browseUrl = url("https://github.com/xerial/sbt-sql"),
       connection = "scm:git@github.com:xerial/sbt-sql.git"
@@ -40,8 +40,8 @@ val buildSettings = Seq(
     "io.trino"       % "trino-jdbc" % TRINO_VERSION % "test"
   ),
   // sbt plugin settings
-  sbtPlugin    := true,
-  scalaVersion := SCALA_2_12,
+  sbtPlugin          := true,
+  scalaVersion       := SCALA_2_12,
   scriptedLaunchOpts := {
     scriptedLaunchOpts.value ++
       Seq("-Xmx1024M", "-Dplugin.version=" + version.value)

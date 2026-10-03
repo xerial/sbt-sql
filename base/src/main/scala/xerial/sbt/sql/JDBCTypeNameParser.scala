@@ -59,7 +59,7 @@ object JDBCTypeNameParser extends RegexParsers with LogSupport {
     val input = s.toLowerCase(Locale.US).trim
     parseAll(dataType, input) match {
       case Success(result, next) => Some(result)
-      case Error(msg, next) =>
+      case Error(msg, next)      =>
         warn(msg)
         None
       case Failure(msg, next) =>

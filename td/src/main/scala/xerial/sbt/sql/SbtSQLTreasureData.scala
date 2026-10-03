@@ -14,7 +14,7 @@ object SbtSQLTreasureData extends AutoPlugin {
   lazy val tdSettings = SQL.sqlSettings ++ Seq(
     sqlDir     := (Compile / sourceDirectory).value / "sql" / "trino",
     jdbcDriver := "io.trino.jdbc.TrinoDriver",
-    jdbcURL := {
+    jdbcURL    := {
       val host = credentials.value
         .collectFirst {
           case d: DirectCredentials if d.realm == "Treasure Data" =>
