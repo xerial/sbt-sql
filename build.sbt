@@ -2,7 +2,9 @@ val TRINO_VERSION                   = "477"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.4.0"
 
 val SCALA_2_12 = "2.12.20"
-ThisBuild / scalaVersion := SCALA_2_12
+val SCALA_3    = "3.8.4"
+ThisBuild / scalaVersion       := SCALA_3
+ThisBuild / crossScalaVersions := Seq(SCALA_2_12, SCALA_3)
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -25,7 +27,7 @@ val buildSettings = Seq(
     else localStaging.value
   },
   organizationName       := "Xerial project",
-  organizationHomepage   := Some(new URL("https://xerial.org/")),
+  organizationHomepage   := Some(url("https://xerial.org/")),
   description            := "A sbt plugin for generating model classes from SQL files",
   publishMavenStyle      := true,
   Test / publishArtifact := false,
@@ -33,27 +35,39 @@ val buildSettings = Seq(
   parallelExecution      := true,
   scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
   libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-    // Scala 2.10 contains parser combinators
-    // "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5",
+    // Used for evaluating SQL template expressions at build time
+    scalaBinaryVersion.value match {
+      case "2.12" => "org.scala-lang"  % "scala-compiler"  % scalaVersion.value
+      case _      => "org.scala-lang" %% "scala3-compiler" % scalaVersion.value
+    },
     "org.scalatest" %% "scalatest"  % "3.2.19"      % "test",
     "io.trino"       % "trino-jdbc" % TRINO_VERSION % "test"
   ),
-  // sbt plugin settings
-  sbtPlugin    := true,
-  scalaVersion := SCALA_2_12,
+  // sbt plugin settings: sbt 1.x plugins are built with Scala 2.12, sbt 2.x plugins with Scala 3
+  sbtPlugin := true,
+  pluginCrossBuild / sbtVersion := {
+    scalaBinaryVersion.value match {
+      case "2.12" => "1.8.0"
+      case _      => "2.0.11"
+    }
+  },
+  scriptedSbt := {
+    scalaBinaryVersion.value match {
+      case "2.12" => "1.12.15"
+      case _      => sbtVersion.value
+    }
+  },
   scriptedLaunchOpts := {
     scriptedLaunchOpts.value ++
       Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
-  },
-  crossSbtVersions := Vector("1.4.6")
+  }
 )
 
 commands += Command.command("bumpPluginVersion") { state =>
   val extracted  = Project.extract(state)
   val newVersion = extracted.get(ThisBuild / version)
   val pluginSbt  = file(".") ** "src" / "sbt-test" ** "project" ** "plugins.sbt"
-  for (f <- pluginSbt.get) {
+  for (f <- pluginSbt.get()) {
     state.log.info(s"update sbt-sql plugin version in ${f}")
     val updated = (for (line <- IO.readLines(f)) yield {
       line.replaceAll("""(.+\"sbt-sql(-[a-z]+)?\" % \")([^"]+)("\))""", s"$$1${newVersion}$$4")
@@ -75,8 +89,7 @@ lazy val root: Project =
       scriptedBufferLog := false,
       publish           := {},
       publishLocal      := {},
-      publishArtifact   := false,
-      test              := {}
+      publishArtifact   := false
     )
     .aggregate(base, generic, sqlite, duckdb, trino, td)
     .dependsOn(base, generic, sqlite, duckdb, trino, td)

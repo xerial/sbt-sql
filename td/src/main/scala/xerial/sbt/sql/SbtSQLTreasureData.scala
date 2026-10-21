@@ -1,9 +1,9 @@
 package xerial.sbt.sql
 
-import sbt.{AutoPlugin, DirectCredentials}
 import sbt.plugins.JvmPlugin
 import sbt.Keys._
 import sbt._
+import xerial.sbt.sql.CredentialsCompat.DirectCredentials
 
 object SbtSQLTreasureData extends AutoPlugin {
 

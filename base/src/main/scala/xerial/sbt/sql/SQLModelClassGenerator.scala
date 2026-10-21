@@ -7,6 +7,9 @@ import sbt.{File, IO, _}
 import wvlet.log.LogSupport
 import xerial.sbt.sql.DataType.StringType
 
+import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success, Try}
 import java.sql.ResultSetMetaData
 
@@ -103,50 +106,49 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends LogSupport {
 
   def generate(config: GeneratorConfig): Seq[File] = {
     // Submit queries using multi-threads to minimize the waiting time
-    val result    = Seq.newBuilder[File]
     val buildTime = SQLModelClassGenerator.getBuildTime
     debug(s"SQLModelClassGenerator version:${SQLModelClassGenerator.getVersion}")
 
     val baseDir = file(".")
 
-    for (sqlFile <- (config.sqlDir ** "*.sql").get.par) {
-      val path            = sqlFile.relativeTo(config.sqlDir).get.getPath
-      val targetClassFile = config.targetDir / path.replaceAll("\\.sql$", ".scala")
+    val tasks = (config.sqlDir ** "*.sql").get().map { sqlFile =>
+      Future {
+        val path            = sqlFile.relativeTo(config.sqlDir).get.getPath
+        val targetClassFile = config.targetDir / path.replaceAll("\\.sql$", ".scala")
 
-      val sqlFilePath = sqlFile.relativeTo(baseDir).getOrElse(sqlFile)
-      debug(s"Processing ${sqlFilePath}")
-      val latestTimestamp = Math.max(sqlFile.lastModified(), buildTime)
-      if (
-        targetClassFile.exists()
-        && targetClassFile.exists()
-        && latestTimestamp <= targetClassFile.lastModified()
-      ) {
-        debug(s"${targetClassFile.relativeTo(config.targetDir).getOrElse(targetClassFile)} is up-to-date")
-      } else {
-        val sql = IO.read(sqlFile)
-        Try(SQLTemplate(sql)) match {
-          case Success(template) =>
-            val limit0 = wrapWithLimit0(template.populated)
-            info(s"Checking the SQL result schema of ${sqlFilePath}")
-            val schema = checkResultSchema(limit0, template.optionalParams)
+        val sqlFilePath = sqlFile.relativeTo(baseDir).getOrElse(sqlFile)
+        debug(s"Processing ${sqlFilePath}")
+        val latestTimestamp = Math.max(sqlFile.lastModified(), buildTime)
+        if (
+          targetClassFile.exists()
+          && targetClassFile.exists()
+          && latestTimestamp <= targetClassFile.lastModified()
+        ) {
+          debug(s"${targetClassFile.relativeTo(config.targetDir).getOrElse(targetClassFile)} is up-to-date")
+        } else {
+          val sql = IO.read(sqlFile)
+          Try(SQLTemplate(sql)) match {
+            case Success(template) =>
+              val limit0 = wrapWithLimit0(template.populated)
+              info(s"Checking the SQL result schema of ${sqlFilePath}")
+              val schema = checkResultSchema(limit0, template.optionalParams)
 
-            // Write SQL template without type annotation
-            val scalaCode = schemaToClass(sqlFile, config.sqlDir, schema, template)
-            info(s"Generating model class: ${targetClassFile}")
-            info(s"${scalaCode}")
-            IO.write(targetClassFile, scalaCode)
-            targetClassFile.setLastModified(latestTimestamp)
-          case Failure(e) =>
-            error(s"Failed to parse ${sqlFile}: ${e.getMessage}")
-            throw e
+              // Write SQL template without type annotation
+              val scalaCode = schemaToClass(sqlFile, config.sqlDir, schema, template)
+              info(s"Generating model class: ${targetClassFile}")
+              info(s"${scalaCode}")
+              IO.write(targetClassFile, scalaCode)
+              targetClassFile.setLastModified(latestTimestamp)
+            case Failure(e) =>
+              error(s"Failed to parse ${sqlFile}: ${e.getMessage}")
+              throw e
+          }
         }
-      }
 
-      synchronized {
-        result += targetClassFile
+        targetClassFile
       }
     }
-    result.result()
+    Await.result(Future.sequence(tasks), Duration.Inf)
   }
 
   def schemaToParamDef(schema: Schema) = {

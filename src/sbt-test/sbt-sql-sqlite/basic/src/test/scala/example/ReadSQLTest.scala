@@ -1,10 +1,10 @@
 package example
 
-import java.sql.DriverManager
+import java.sql.{Connection, DriverManager}
 
 object ReadSQLTest extends wvlet.airspec.AirSpec {
 
-  private implicit lazy val connection = {
+  private implicit lazy val connection: Connection = {
     Class.forName("org.sqlite.JDBC")
     DriverManager.getConnection("jdbc:sqlite::memory:")
   }
@@ -90,5 +90,11 @@ object ReadSQLTest extends wvlet.airspec.AirSpec {
     val result3 = person_opt2.select()
     info(s"person_opt2.select(): ${result3}")
     assert(result3 == Seq(person_opt2(1, Some("leo")), person_opt2(2, Some("yui")), person_opt2(3, None)))
+  }
+
+  test("populate template variables") {
+    val result = person_by_id.select(2)
+    info(s"person_by_id.select(2): ${result}")
+    assert(result == Seq(person_by_id(1, "leo"), person_by_id(2, "yui")))
   }
 }

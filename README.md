@@ -18,7 +18,7 @@ A sbt plugin for generating model classes from SQL query files in `src/main/sql`
 
 sbt-sql version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sql/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sql) Airframe version: [![wvlet/airframe](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-codec_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-codec_2.13)
 
-sbt-sql supports only sbt 1.8.x or higher.
+sbt-sql supports sbt 1.8.x or higher, and sbt 2.x.
 
 **project/plugins.sbt**
 ```scala

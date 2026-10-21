@@ -1,7 +1,5 @@
 package xerial.sbt.sql
 
-import wvlet.airframe.surface.{Surface, Zero}
-import wvlet.airframe.surface.reflect.{ReflectSurfaceFactory, ReflectTypeUtil}
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
@@ -31,7 +29,7 @@ object SQLTemplateCompiler extends LogSupport {
           case _ => null
         }
       case _ =>
-        Try(Zero.zeroOf(ReflectSurfaceFactory.ofClass(Class.forName(typeName)))).toOption.getOrElse(null)
+        TemplateEval.zeroOf(typeName)
     }
 
   def compile(sqlTemplate: String): SQLTemplate = {
@@ -76,10 +74,7 @@ object SQLTemplateCompiler extends LogSupport {
      """.stripMargin
     debug(s"function def:\n${funDef}")
 
-    import scala.reflect.runtime.currentMirror
-    import scala.tools.reflect.ToolBox
-    val toolBox = currentMirror.mkToolBox()
-    val code = Try(toolBox.eval(toolBox.parse(funDef))) match {
+    val code = Try(TemplateEval.eval(funDef)) match {
       case Success(c) => c
       case Failure(f) =>
         error(s"Failed to compile code:\n${funDef}")

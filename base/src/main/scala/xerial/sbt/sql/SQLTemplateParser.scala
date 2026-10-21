@@ -156,7 +156,7 @@ object SQLTemplateParser extends LogSupport {
   def removeParamType(sql: String): String = {
     embeddedParamPattern.replaceAllIn(
       sql,
-      { m: Match =>
+      { (m: Match) =>
         val name = m.group(1)
         "\\${" + name + "}"
       }

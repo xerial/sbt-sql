@@ -12,7 +12,30 @@ class SQLTemplateCompilerTest extends Spec {
           |select ${range._1}, ${range._2}, '${str.toString}'
         """.stripMargin
 
-      SQLTemplateCompiler.compile(t)
+      val compiled = SQLTemplateCompiler.compile(t)
+      compiled.populated.trim shouldBe "select 0, 0, 'test'"
+    }
+
+    "populate parameters with default values" in {
+      val t =
+        """@(id:Int, name:String, active:Boolean)
+          |select * from t where id = ${id} and name = '${name}' and active = ${active}
+        """.stripMargin
+
+      val compiled = SQLTemplateCompiler.compile(t)
+      compiled.populated.trim shouldBe "select * from t where id = 0 and name = 'dummy' and active = true"
+    }
+
+    "report invalid Scala expressions" in {
+      val t =
+        """@(id:Int)
+          |select ${id.unknownMethod}
+        """.stripMargin
+
+      val e = intercept[Throwable] {
+        SQLTemplateCompiler.compile(t)
+      }
+      e.getMessage should include("unknownMethod")
     }
 
   }
