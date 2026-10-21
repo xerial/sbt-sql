@@ -1,5 +1,5 @@
 val TRINO_VERSION                   = "484"
-val SCALA_PARSER_COMBINATOR_VERSION = "2.4.0"
+val SCALA_PARSER_COMBINATOR_VERSION = "2.5.0"
 
 val SCALA_2_12 = "2.12.21"
 val SCALA_3    = "3.8.4"
