@@ -1,7 +1,7 @@
 val TRINO_VERSION                   = "484"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.4.0"
 
-val SCALA_2_12 = "2.12.20"
+val SCALA_2_12 = "2.12.21"
 val SCALA_3    = "3.8.4"
 ThisBuild / scalaVersion       := SCALA_3
 ThisBuild / crossScalaVersions := Seq(SCALA_2_12, SCALA_3)
