@@ -1,6 +1,7 @@
 package xerial.sbt.sql
 
 import dotty.tools.dotc.Driver
+import dotty.tools.dotc.reporting.StoreReporter
 
 import java.io.File
 import java.net.URLClassLoader
@@ -30,11 +31,17 @@ private[sql] object TemplateEval {
            |""".stripMargin
       )
       val outDir = Files.createDirectory(workDir.resolve("classes"))
-      val reporter = new Driver().process(
-        Array("-classpath", classpath, "-d", outDir.toString, "-nowarn", src.toString)
+      // Collect compile errors to report them through the exception instead of printing them to stdout
+      val reporter = new StoreReporter()
+      new Driver().process(
+        Array("-classpath", classpath, "-d", outDir.toString, "-nowarn", src.toString),
+        reporter
       )
       if (reporter.hasErrors) {
-        throw new IllegalArgumentException(s"Failed to compile SQL template code:\n${code}")
+        val errors = reporter.allErrors
+        throw new IllegalArgumentException(
+          s"Failed to compile SQL template code:\n${errors.map(_.message).mkString("\n")}\n${code}"
+        )
       }
       // Load all generated classes in memory so that the temporary directory can be removed
       val loader = new InMemoryClassLoader(readClasses(outDir), getClass.getClassLoader)

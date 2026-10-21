@@ -26,6 +26,18 @@ class SQLTemplateCompilerTest extends Spec {
       compiled.populated.trim shouldBe "select * from t where id = 0 and name = 'dummy' and active = true"
     }
 
+    "report invalid Scala expressions" in {
+      val t =
+        """@(id:Int)
+          |select ${id.unknownMethod}
+        """.stripMargin
+
+      val e = intercept[Throwable] {
+        SQLTemplateCompiler.compile(t)
+      }
+      e.getMessage should include("unknownMethod")
+    }
+
   }
 
 }
