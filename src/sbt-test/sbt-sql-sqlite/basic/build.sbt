@@ -16,7 +16,7 @@ testFrameworks += new TestFramework("wvlet.airspec.Framework")
 // The managed source directory differs between sbt 1 and sbt 2
 TaskKey[Unit]("checkGenerated") := {
   val dir = (Compile / managedSourceDirectories).value.head
-  for (f <- Seq("example/person.scala", "example/person_opt.scala", "example/person_opt2.scala")) {
+  for (f <- Seq("example/person.scala", "example/person_opt.scala", "example/person_opt2.scala", "example/person_by_id.scala")) {
     assert((dir / f).exists, s"${dir / f} is not generated")
   }
 }

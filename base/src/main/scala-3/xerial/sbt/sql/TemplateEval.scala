@@ -5,7 +5,7 @@ import dotty.tools.dotc.Driver
 import java.io.File
 import java.net.URLClassLoader
 import java.nio.file.{Files, Path}
-import scala.jdk.CollectionConverters.*
+import scala.jdk.CollectionConverters._
 import scala.util.Using
 
 /** Evaluates Scala code of SQL templates at build time using the Scala 3 compiler, as Scala 3 has no ToolBox */
@@ -46,16 +46,17 @@ private[sql] object TemplateEval {
 
   // The plugin runs inside sbt, so java.class.path doesn't contain the Scala library
   private lazy val classpath: String = {
-    def location(cl: Class[?]): Seq[String] =
-      Option(cl.getProtectionDomain.getCodeSource).map(s => new File(s.getLocation.toURI).getPath).toSeq
+    def location(className: String): Seq[String] =
+      Option(Class.forName(className).getProtectionDomain.getCodeSource)
+        .map(s => new File(s.getLocation.toURI).getPath).toSeq
     def urls(cl: ClassLoader): Seq[String] = cl match {
-      case null               => Nil
+      case null              => Nil
       case u: URLClassLoader => u.getURLs.toSeq.map(u => new File(u.toURI).getPath) ++ urls(u.getParent)
       case other             => urls(other.getParent)
     }
-    (location(classOf[scala.Function0[?]]) ++ location(classOf[scala.util.boundary.Break[?]]) ++ urls(
-      getClass.getClassLoader
-    )).distinct.mkString(File.pathSeparator)
+    // Scala 2.13 and Scala 3 parts of the standard library
+    val libs = location("scala.Function0") ++ location("scala.util.boundary$")
+    (libs ++ urls(getClass.getClassLoader)).distinct.mkString(File.pathSeparator)
   }
 
   private def readClasses(dir: Path): Map[String, Array[Byte]] =
@@ -70,7 +71,7 @@ private[sql] object TemplateEval {
 
   private class InMemoryClassLoader(classes: Map[String, Array[Byte]], parent: ClassLoader)
       extends ClassLoader(parent) {
-    override protected def findClass(name: String): Class[?] =
+    override protected def findClass(name: String) =
       classes.get(name) match {
         case Some(bytes) => defineClass(name, bytes, 0, bytes.length)
         case None        => super.findClass(name)

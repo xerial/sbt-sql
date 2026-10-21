@@ -37,7 +37,7 @@ val buildSettings = Seq(
   libraryDependencies ++= Seq(
     // Used for evaluating SQL template expressions at build time
     scalaBinaryVersion.value match {
-      case "2.12" => "org.scala-lang" % "scala-compiler" % scalaVersion.value
+      case "2.12" => "org.scala-lang"  % "scala-compiler"  % scalaVersion.value
       case _      => "org.scala-lang" %% "scala3-compiler" % scalaVersion.value
     },
     "org.scalatest" %% "scalatest"  % "3.2.19"      % "test",
