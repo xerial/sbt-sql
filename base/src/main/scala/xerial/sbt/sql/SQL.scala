@@ -2,7 +2,7 @@ package xerial.sbt.sql
 
 import sbt.Keys._
 import sbt._
-import sbt.internal.io.Source
+import sbt.nio.Keys.watchTriggers
 
 /** */
 object SQL {
@@ -10,11 +10,17 @@ object SQL {
   trait Keys {
     val sqlDir     = settingKey[File]("A folder containing SQL files. e.g. src/main/sql")
     val jdbcDriver = settingKey[String]("JDBC driver class name. e.g., com.facebook.presto.jdbc.PrestoDriver")
-    val jdbcURL  = taskKey[String]("JDBC connection URL. e.g., jdbc:trino://api-presto.treasuredata.com:443/td-presto")
+    // These tasks depend on external databases or environment variables, so they must not be cached in sbt 2
+    @transient
+    val jdbcURL = taskKey[String]("JDBC connection URL. e.g., jdbc:trino://api-presto.treasuredata.com:443/td-presto")
+    @transient
     val jdbcUser = taskKey[String]("JDBC user name")
-    val jdbcPassword     = taskKey[String]("JDBC password")
+    @transient
+    val jdbcPassword = taskKey[String]("JDBC password")
+    @transient
     val generateSQLModel = taskKey[Seq[File]]("create model classes from SQL files")
-    val sqlModelClasses  = taskKey[Seq[File]]("Generated SQL model classes")
+    @transient
+    val sqlModelClasses = taskKey[Seq[File]]("Generated SQL model classes")
   }
 
   object autoImport extends Keys
@@ -33,15 +39,7 @@ object SQL {
     },
     sqlModelClasses := generateSQLModel.value,
     Compile / sourceGenerators += sqlModelClasses.taskValue,
-    watchSources += new Source(
-      sqlDir.value,
-      new NameFilter {
-        override def accept(name: String): Boolean = {
-          name.endsWith(".sql")
-        }
-      },
-      NothingFilter
-    ),
+    Compile / compile / watchTriggers += sqlDir.value.toGlob / ** / "*.sql",
     jdbcUser     := "",
     jdbcPassword := ""
   )
