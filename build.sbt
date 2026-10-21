@@ -12,7 +12,7 @@ val buildSettings = Seq(
   organization := "org.xerial.sbt",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://github.com/xerial/sbt-sql")),
-  scmInfo := Some(
+  scmInfo  := Some(
     ScmInfo(
       browseUrl = url("https://github.com/xerial/sbt-sql"),
       connection = "scm:git@github.com:xerial/sbt-sql.git"
@@ -44,7 +44,7 @@ val buildSettings = Seq(
     "io.trino"       % "trino-jdbc" % TRINO_VERSION % "test"
   ),
   // sbt plugin settings: sbt 1.x plugins are built with Scala 2.12, sbt 2.x plugins with Scala 3
-  sbtPlugin := true,
+  sbtPlugin                     := true,
   pluginCrossBuild / sbtVersion := {
     scalaBinaryVersion.value match {
       case "2.12" => "1.8.0"
