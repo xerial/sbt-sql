@@ -16,26 +16,26 @@ A sbt plugin for generating model classes from SQL query files in `src/main/sql`
 
 ## Usage
 
-sbt-sql version: [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sql/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sql) Airframe version: [![wvlet/airframe](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-codec_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-codec_2.13)
+sbt-sql version: [![Maven Central](https://img.shields.io/maven-central/v/org.xerial.sbt/sbt-sql_2.12_1.0)](https://central.sonatype.com/artifact/org.xerial.sbt/sbt-sql_2.12_1.0) Airframe version: [![wvlet/airframe](https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe-codec_3)](https://central.sonatype.com/artifact/org.wvlet.airframe/airframe-codec_3)
 
 sbt-sql supports sbt 1.8.x or higher, and sbt 2.x.
 
 **project/plugins.sbt**
 ```scala
 // For Trino
-addSbtPlugin("org.xerial.sbt" % "sbt-sql-trino" % "(version)")
+addSbtPlugin("org.xerial.sbt" % "sbt-sql-trino" % "0.20")
 
 // For DuckDB
-addSbtPlugin("org.xerial.sbt" % "sbt-sql-duckdb" % "(version)")
+addSbtPlugin("org.xerial.sbt" % "sbt-sql-duckdb" % "0.20")
 
 // For SQLite (available since 0.7.0)
-addSbtPlugin("org.xerial.sbt" % "sbt-sql-sqlite" % "(version)")
+addSbtPlugin("org.xerial.sbt" % "sbt-sql-sqlite" % "0.20")
 
 // For Treasure Data Presto
-addSbtPlugin("org.xerial.sbt" % "sbt-sql-td" % "(version)")
+addSbtPlugin("org.xerial.sbt" % "sbt-sql-td" % "0.20")
 
 // For Generic JDBC drivers
-addSbtPlugin("org.xerial.sbt" % "sbt-sql" % "(version)")
+addSbtPlugin("org.xerial.sbt" % "sbt-sql" % "0.20")
 // Add your jdbc driver dependency for checking the result schema
 libraryDependencies ++= Seq(
    // Add airframe-codec for mapping JDBC data to Scala objects
