@@ -7,14 +7,16 @@ on:
       - '**.java'
       - '**.sbt'
       - 'project/build.properties'
+      - '.github/workflows/test.yml'
   push:
     branches:
-      - master
+      - main
     paths:
       - '**.scala'
       - '**.java'
       - '**.sbt'
       - 'project/build.properties'
+      - '.github/workflows/test.yml'
 
 jobs:
   code_format:
