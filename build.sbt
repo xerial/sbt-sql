@@ -40,7 +40,7 @@ val buildSettings = Seq(
       case "2.12" => "org.scala-lang"  % "scala-compiler"  % scalaVersion.value
       case _      => "org.scala-lang" %% "scala3-compiler" % scalaVersion.value
     },
-    "org.scalatest" %% "scalatest"  % "3.2.19"      % "test",
+    "org.scalatest" %% "scalatest"  % "3.2.20"      % "test",
     "io.trino"       % "trino-jdbc" % TRINO_VERSION % "test"
   ),
   // sbt plugin settings: sbt 1.x plugins are built with Scala 2.12, sbt 2.x plugins with Scala 3
