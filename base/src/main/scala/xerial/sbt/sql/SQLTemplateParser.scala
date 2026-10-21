@@ -54,7 +54,7 @@ object SQLTemplateParser extends LogSupport {
       if (line.startsWith("@")) {
         PreambleParser.parse(PreambleParser.preamble, line) match {
           case PreambleParser.Success(matched, _) => preamble += matched
-          case other =>
+          case other                              =>
             throw ParseError(other.toString, Some(Pos(lineNum + 1, 0)))
         }
       } else {
@@ -66,7 +66,7 @@ object SQLTemplateParser extends LogSupport {
     val p         = preamble.result()
     val imports   = p.collect { case i: Import => i }
     val optionals = p.collect { case o: Optional => o }
-    val f = {
+    val f         = {
       val defs = p.collect { case f: Function => f }
       if (defs.size > 1) {
         warn(s"Multiple function definitions are found:\n${defs.mkString("\n")}")
@@ -103,14 +103,14 @@ object SQLTemplateParser extends LogSupport {
     def value: Parser[String]        = ident | str | longLiteral | decimalNumber | floatingPointNumber
     def longLiteral: Parser[String]  = """-?[\d_]+L?""".r
     def defaultValue: Parser[String] = "=" ~ value ^^ { case _ ~ v => v }
-    def arg: Parser[FunctionArg] =
+    def arg: Parser[FunctionArg]     =
       ident ~ ":" ~ typeName ~ opt(defaultValue) ^^ { case n ~ _ ~ t ~ opt => FunctionArg(n, t, opt) }
     def args: Parser[Seq[FunctionArg]] =
       arg ~ rep(',' ~ arg) ^^ { case first ~ rest => Seq(first) ++ rest.map(_._2).toSeq }
 
     def typeName: Parser[String]    = ident | tupleType | genericType
     def genericType: Parser[String] = ident ~ "[" ~ typeName ~ rep("," ~ typeName) ~ "]" ^^ { _._2 }
-    def tupleType: Parser[String] =
+    def tupleType: Parser[String]   =
       "(" ~ typeName ~ rep("," ~ typeName) ~ ")" ^^ { case _ ~ first ~ rest ~ _ =>
         s"(${(Seq(first) ++ rest.map(_._2).toSeq).mkString(",")})"
       }
@@ -144,8 +144,8 @@ object SQLTemplateParser extends LogSupport {
       }
     }
     // Dedup by preserving orders
-    val lst  = params.result
-    var seen = Set.empty[String]
+    val lst    = params.result
+    var seen   = Set.empty[String]
     val result = for (p <- params.result if !seen.contains(p.name)) yield {
       seen += p.name
       p

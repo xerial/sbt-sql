@@ -9,13 +9,13 @@ object SQLTemplateCompiler extends LogSupport {
 
   private def defaultValueFor(typeName: String): Any =
     typeName match {
-      case "SQL" | "sql" => ""
-      case "String"      => "dummy"
-      case "Int"         => 0
-      case "Long"        => 0L
-      case "Float"       => 0.0f
-      case "Double"      => 0.0
-      case "Boolean"     => true
+      case "SQL" | "sql"                     => ""
+      case "String"                          => "dummy"
+      case "Int"                             => 0
+      case "Long"                            => 0L
+      case "Float"                           => 0.0f
+      case "Double"                          => 0.0
+      case "Boolean"                         => true
       case tuple if typeName.startsWith("(") =>
         val a = tuple.trim.substring(1, tuple.length - 1).split(",")
         val e = a.map(x => defaultValueFor(x))
@@ -62,7 +62,7 @@ object SQLTemplateCompiler extends LogSupport {
       }.mkString("\n")
 
     val sqlCode = "s\"\"\"" + parsed.sql + "\"\"\""
-    val funDef =
+    val funDef  =
       s"""$imports
          |new (${functionArgs} => String) {
          |  def apply(${methodArgs}): String = {

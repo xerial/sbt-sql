@@ -53,9 +53,9 @@ object SQLModelClassGenerator extends LogSupport {
 
   private[sql] def generateSchema(columns: Seq[JDBCResultColumn], optionalColumns: Set[String]): Schema = {
     val colTypes = columns.map { c =>
-      val tpe              = JDBCType.valueOf(c.typeId)
-      val typeName         = c.typeName
-      val originalDataType = JDBCTypeNameParser.parseDataType(typeName).getOrElse(StringType)
+      val tpe                 = JDBCType.valueOf(c.typeId)
+      val typeName            = c.typeName
+      val originalDataType    = JDBCTypeNameParser.parseDataType(typeName).getOrElse(StringType)
       val (colName, dataType) = if (c.name.endsWith("__optional") || optionalColumns.contains(c.name)) {
         (c.name.stripSuffix("__optional"), DataType.OptionType(originalDataType))
       } else {
@@ -89,7 +89,7 @@ class SQLModelClassGenerator(jdbcConfig: JDBCConfig) extends LogSupport {
   def checkResultSchema(sql: String, optionalParams: Set[String]): Schema = {
     db.withConnection { conn =>
       db.submitQuery(conn, sql) { rs =>
-        val m = rs.getMetaData
+        val m    = rs.getMetaData
         val cols = (1 to m.getColumnCount).map { i =>
           JDBCResultColumn(
             m.getColumnName(i),
