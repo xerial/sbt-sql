@@ -144,9 +144,9 @@ object SQLTemplateParser extends LogSupport {
       }
     }
     // Dedup by preserving orders
-    val lst    = params.result
+    val lst    = params.result()
     var seen   = Set.empty[String]
-    val result = for (p <- params.result if !seen.contains(p.name)) yield {
+    val result = for (p <- params.result() if !seen.contains(p.name)) yield {
       seen += p.name
       p
     }
