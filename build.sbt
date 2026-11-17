@@ -2,7 +2,7 @@ val TRINO_VERSION                   = "484"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.5.0"
 
 val SCALA_2_12 = "2.12.21"
-val SCALA_3    = "3.8.4"
+val SCALA_3    = "3.9.0"
 ThisBuild / scalaVersion       := SCALA_3
 ThisBuild / crossScalaVersions := Seq(SCALA_2_12, SCALA_3)
 
@@ -34,6 +34,9 @@ val buildSettings = Seq(
   pomIncludeRepository   := { _ => false },
   parallelExecution      := true,
   scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
+  scalacOptions ++= {
+    if (scalaBinaryVersion.value == "2.12") Seq("-Xsource:3", "-release:8") else Nil
+  },
   libraryDependencies ++= Seq(
     // Used for evaluating SQL template expressions at build time
     scalaBinaryVersion.value match {
@@ -48,13 +51,13 @@ val buildSettings = Seq(
   pluginCrossBuild / sbtVersion := {
     scalaBinaryVersion.value match {
       case "2.12" => "1.8.0"
-      case _      => "2.0.11"
+      case _      => "2.1.0"
     }
   },
   scriptedSbt := {
     scalaBinaryVersion.value match {
       case "2.12" => "1.12.15"
-      case _      => sbtVersion.value
+      case _      => "2.1.0"
     }
   },
   scriptedLaunchOpts := {
